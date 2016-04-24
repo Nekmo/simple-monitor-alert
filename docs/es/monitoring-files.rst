@@ -51,7 +51,7 @@ Así, un ejemplo completo sería:
             # Ignore dev, run, tmpfs...
             continue
         fi
-        echo "pcnt_use($device).name = 'Percentage of space usted in $device ("`echo $part_data | awk '{ print $6 }'`")'";
+        echo "pcnt_use($device).name = 'Percentage of space used in $device ("`echo $part_data | awk '{ print $6 }'`")'";
         echo "pcnt_use($device).expected = <= 80"
         echo "pcnt_use($device).value = "`echo $part_data | awk '{ print substr($5, 1, length($5)-1) }'`;
         echo -n "pcnt_use($device).extra_info = 'Space: "`echo $part_data | awk '{ print $4 }'`"/";
@@ -60,35 +60,55 @@ Así, un ejemplo completo sería:
 
 Que tendría como un posible resultado::
 
-    pcnt_use(sdc1).name = 'Percentage of space usted in sdc1 (/)'
+    pcnt_use(sdc1).name = 'Percentage of space used in sdc1 (/)'
     pcnt_use(sdc1).expected = <= 80
     pcnt_use(sdc1).value = 97
     pcnt_use(sdc1).extra_info = 'Space: 788M/23G'
-    pcnt_use(sda1).name = 'Percentage of space usted in sda1 (/media/datos)'
+    pcnt_use(sda1).name = 'Percentage of space used in sda1 (/media/datos)'
     pcnt_use(sda1).expected = <= 80
     pcnt_use(sda1).value = 91
     pcnt_use(sda1).extra_info = 'Space: 91G/818G'
-    pcnt_use(sdc2).name = 'Percentage of space usted in sdc2 (/home)'
+    pcnt_use(sdc2).name = 'Percentage of space used in sdc2 (/home)'
     pcnt_use(sdc2).expected = <= 80
     pcnt_use(sdc2).value = 63
     pcnt_use(sdc2).extra_info = 'Space: 25G/42G'
-    pcnt_use(sdc3).name = 'Percentage of space usted in sdc3 (/boot/efi)'
+    pcnt_use(sdc3).name = 'Percentage of space used in sdc3 (/boot/efi)'
     pcnt_use(sdc3).expected = <= 80
     pcnt_use(sdc3).value = 67
     pcnt_use(sdc3).extra_info = 'Space: 22M/42M'
-    pcnt_use(md0).name = 'Percentage of space usted in md0 (/media/nekraid01)'
+    pcnt_use(md0).name = 'Percentage of space used in md0 (/media/nekraid01)'
     pcnt_use(md0).expected = <= 80
     pcnt_use(md0).value = 100
     pcnt_use(md0).extra_info = 'Space: 52G/5,4T'
 
 
-Posibles parámetros
-===================
-El siguiente es un listado de los posibles parámetros que puede tener un item:
+Ejemplo pasando parámetros
+==========================
+Ahora vamos a complicarlo un poco más. Esto es sobre todo útil si queremos hacer monitores reutilizables, que
+compartamos con nuestros amigos. En el primer ejemplo, monitorizábamos un archivo específico, pero sería mucho
+mejor poder definir qué archivo queremos monitorizar. Para ello pasaremos una variable de entorno:
 
-* **name** (opcional): Nombre que se mostrará para representar al comando en los informes.
-* **expected** (opcional): Valor esperado para considerarse que no sea un error. Por defecto, yes, true o 0. Puede
-tener modificadores como ">", ">=", etc., pero por defecto se asume "==".
-* **level** (opcional): Por defecto, warning. Puede ser "info", "warning", "average", "high" o "disaster". Puede
-ser sobrescrito por el usuario como cualquier otro parámetro en el archivo se settings principal.
-* **value**: El valor que devuelve el item. Es lo que determina si se está dando un error o no.
+
+.. code-block:: bash
+
+    #!/usr/bin/env bash
+    echo "file_exists.expected = yes"
+    echo "file_exists.require_param = yes"
+    if [ -f "$file_exists" ]; then value="yes"; else value="no"; fi
+    echo "file_exists.value = $value"
+
+El nombre de la variable será el del item. Puedes probar su funcionamiento usando una variable de entorno en la
+ejecución del mismo::
+
+    file_exists=/etc/passwd ./example-3.sh
+
+En el archivo de settings de simple-monitor-alert, es donde el usuario establecerá dicho parámetro::
+
+    settings.ini
+    ------------
+    file_exists.param = /etc/passwd
+
+¿Y en qué consiste el `require_param`? Es lo que permite decirle al monitor que ese item requiere un parámetro, y si
+al ejecutarse estuviese estuviese definido como `yes` y no se le hubiese pasado ninguno, que debe notificar al usuario
+que hay un problema en su configuración.
+
