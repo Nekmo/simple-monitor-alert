@@ -12,6 +12,12 @@ class InvalidScriptLineBase:
         return self.__repr__()
 
 
+class InvalidValueLineBase:
+    def __init__(self, line, script_path):
+        self.line = line
+        self.script_path = script_path
+
+
 class InvalidScriptLineError(InvalidScriptLineBase, SyntaxError):
     pass
 
