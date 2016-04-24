@@ -106,9 +106,55 @@ En el archivo de settings de simple-monitor-alert, es donde el usuario establece
 
     settings.ini
     ------------
+    [example-3]
     file_exists.param = /etc/passwd
 
 ¿Y en qué consiste el `require_param`? Es lo que permite decirle al monitor que ese item requiere un parámetro, y si
 al ejecutarse estuviese estuviese definido como `yes` y no se le hubiese pasado ninguno, que debe notificar al usuario
 que hay un problema en su configuración.
 
+
+Evitando los picos
+==================
+Cuando monitorizamos ciertas cosas que son susceptibles a estar en estado de alerta durante unos momentos, podemos
+querer que dicha alerta se lance únicamente cuando se mantiene durante cierto tiempo. El caso más claro de este
+ejemplo, es el porcentaje de CPU.
+
+Para solucionar este problema, definiremos `seconds`. Cuando lo definamos, la alerta sólo se ejecutará cuando se
+haya mantenido dicho estado un determinado tiempo.
+
+.. code-block:: bash
+
+    #!/usr/bin/env bash
+    echo "cpu_pcnt.name = 'CPU percentage usage'"
+    echo "cpu_pcnt.expected= <= 80"
+    echo "cpu_pcnt.seconds = 600"
+    echo "cpu_pcnt.value = "`grep 'cpu ' /proc/stat | awk '{ print ($2+$4)*100/($2+$4+$5)}'`
+
+Cabeceras
+=========
+Los scripts pueden tener ciertas opciones que son globales a todos los items del mismo.
+
+Las cabeceras deben establecerse al inicio y tener una estructura como la siguiente::
+
+    X-Camel-Case-Header: <value>
+
+Por ejemplo::
+
+    X-Run-Every-Seconds: 600
+
+Ejecutar cada X tiempo
+----------------------
+Establece cada cuánto tiempo queremos que se ejecute el archivo. Si **simple-monitor-alert** se ejecuta cada 5
+segundos y sabemos que nuestro script es lento y es algo que varía poco, podemos establecer que tenga que pasar
+un tiempo mínimo para volver a ejecutarlo:
+
+
+.. code-block:: bash
+
+    #!/usr/bin/env bash
+    echo "X-Run-Every-Seconds: 600"
+    echo "cpu_pcnt.name = 'CPU percentage usage'"
+    echo "cpu_pcnt.expected= <= 80"
+    echo "cpu_pcnt.seconds = 600"
+    echo "cpu_pcnt.value = "`grep 'cpu ' /proc/stat | awk '{ print ($2+$4)*100/($2+$4+$5)}'`
