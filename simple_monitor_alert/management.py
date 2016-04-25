@@ -9,8 +9,10 @@ from simple_monitor_alert.monitor import Monitors
 
 
 SMA_INI_FILE = '/etc/simple-monitor-alert/sma.ini'
-MONITORS_DIR = '/etc/simple-monitor-alert/monitors/'
-SETTINGS_DIR = '/etc/simple-monitor-alert/settings/'
+MONITORS_DIR = '/etc/simple-monitor-alert/monitors-enabled/'
+MONITORS_SETTINGS_DIR = '/etc/simple-monitor-alert/monitors-settings/'
+ALERTS_DIR = '/etc/simple-monitor-alert/monitors-enabled/'
+ALERTS_SETTINGS_DIR = '/etc/simple-monitor-alert/monitors-settings/'
 
 
 def create_logger(name, level=logging.INFO):
@@ -39,7 +41,9 @@ def execute_from_command_line(argv=None):
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--monitors-dir', default=MONITORS_DIR)
-    parser.add_argument('--settings-dir', default=SETTINGS_DIR)
+    parser.add_argument('--monitors-settings-dir', default=MONITORS_SETTINGS_DIR)
+    parser.add_argument('--alerts-dir', default=ALERTS_DIR)
+    parser.add_argument('--alerts-settings-dir', default=ALERTS_SETTINGS_DIR)
     parser.add_argument('--sma-ini-file', default=SMA_INI_FILE)
 
     parser.add_argument('--warning', help='set logging to warning', action='store_const', dest='loglevel',
@@ -60,5 +64,5 @@ def execute_from_command_line(argv=None):
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
 
-    monitors = Monitors(args.monitors_dir, args.sma_ini_file, args.settings_dir)
+    monitors = Monitors(args.monitors_dir, args.sma_ini_file, args.monitors_settings_dir)
     monitors.execute_all()

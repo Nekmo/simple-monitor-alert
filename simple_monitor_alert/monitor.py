@@ -3,6 +3,8 @@ import subprocess
 import warnings
 import logging
 
+import six
+
 from simple_monitor_alert.exceptions import InvalidScriptLineError, InvalidScriptLineLogging
 from simple_monitor_alert.lines import Item, Line, ItemLine
 
@@ -36,10 +38,16 @@ class Monitor(object):
     def print_evaluate(self, item):
         result = item.evaluate()
         level = 'success' if result else item.get_item_value('level') or 'warning'
-        msg = 'Trigger: [{}] {}'.format(level, item.get_verbose_name())
+        value = item.get_item_value('value')
+        expected = item.get_matcher()
+        if expected:
+            expected = expected.parse()
+        if isinstance(expected, six.string_types):
+            expected = '== {}'.format(expected)
+        msg = 'Trigger: [{}] {}. Result: {} {}'.format(level, item.get_verbose_name(), value, expected)
         extra_info = item.get_item_value('extra_info')
         if extra_info:
-            msg += ': {}'.format(extra_info)
+            msg += '. Extra info: {}'.format(extra_info)
         getattr(logger, 'info' if result else 'warning')(msg)
 
     def parse_lines(self, lines, on_error=InvalidScriptLineLogging):

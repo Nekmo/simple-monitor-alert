@@ -11,6 +11,8 @@ ENCODING = sys.getdefaultencoding()
 
 
 class Operator(object):
+    operator = None
+
     def __init__(self, value):
         self.value = value
 
@@ -29,33 +31,50 @@ class Operator(object):
     def get_class(cls, operator_symbol, value):
         return cls.get_operator(operator_symbol)(value)
 
+    def __str__(self):
+        return '{} {}'.format(self.operator, self.value)
+
+    def __repr__(self):
+        return self.__repr__()
 
 class LtOperator(Operator):
+    operator = '<'
+
     def match(self, other):
         return other < self.value
 
 
 class LeOperator(Operator):
+    operator = '<='
+
     def match(self, other):
         return other <= self.value
 
 
 class EqOperator(Operator):
+    operator = '=='
+
     def match(self, other):
         return other == self.value
 
 
 class NeOperator(Operator):
+    operator = '!='
+
     def match(self, other):
         return other != self.value
 
 
 class GeOperator(Operator):
+    operator = '>='
+
     def match(self, other):
         return other >= self.value
 
 
 class GtOperator(Operator):
+    operator = '>'
+
     def match(self, other):
         return other > self.value
 
@@ -139,7 +158,7 @@ class MatchParser(object):
             return matcher == value
 
     def __repr__(self):
-        return '<Matcher \'{}\' ({})>'.format(self.matcher, self.parse())
+        return '<MatcherParser \'{}\' ({})>'.format(self.matcher, self.parse())
 
 
 class DefaultMatcher(object):
