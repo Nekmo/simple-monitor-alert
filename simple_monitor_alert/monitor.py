@@ -18,8 +18,8 @@ class Monitor(object):
     headers = None
     items = None
 
-    def __init__(self, script_path, config_path=None):
-        self.script_path, self.config_path = script_path, config_path
+    def __init__(self, script_path):
+        self.script_path = script_path
 
     def execute(self):
         popen = subprocess.Popen([self.script_path], stdout=subprocess.PIPE)
@@ -28,14 +28,16 @@ class Monitor(object):
         self.lines = list(lines)
         self.items = self.get_items(self.lines)
         self.headers = self.get_headers(self.lines)
-        self.evaluate_items()
+        return self.items
+        # self.evaluate_items()
 
     def evaluate_items(self, items_list=None):
         items = items_list or self.items.values()
         for item in items:
             self.print_evaluate(item)
 
-    def print_evaluate(self, item):
+    @staticmethod
+    def print_evaluate(item):
         result = item.evaluate()
         level = 'success' if result else item.get_item_value('level') or 'warning'
         value = item.get_item_value('value')
@@ -83,29 +85,25 @@ class Monitor(object):
 class Monitors(object):
     monitors = None
 
-    def __init__(self, monitors_dir=None, settings_file=None, settings_dir=None):
-        self.monitors_dir, self.settings_file, self.settings_dir = monitors_dir, settings_file, settings_dir
+    def __init__(self, monitors_dir=None, config=None):
+        self.monitors_dir, self.config = monitors_dir, config
 
-    def get_monitors(self, monitors_dir=None, settings_dir=None):
+    def get_monitors(self, monitors_dir=None):
         if self.monitors:
             return self.monitors
         monitors_dir = monitors_dir or self.monitors_dir
-        settings_dir = settings_dir or self.settings_dir
-        self.monitors = [self.get_monitor(os.path.join(monitors_dir, file), settings_dir)
+        self.monitors = [self.get_monitor(os.path.join(monitors_dir, file))
                          for file in os.listdir(monitors_dir)]
         return self.monitors
 
     @staticmethod
-    def get_monitor(script_path, settings_dir=None):
-        config_path = os.path.join(settings_dir, os.path.splitext("script_path")[0] + '.ini')
-        if not os.path.lexists(config_path):
-            config_path = None
-        return Monitor(script_path, config_path)
+    def get_monitor(script_path):
+        return Monitor(script_path)
 
     def execute_all(self):
         for monitor in self.get_monitors():
             try:
-                monitor.execute()
+                yield monitor.execute()
             except PermissionError:
                 warnings.warn_explicit('No permissions for monitor. Check execution perms and read perms.',
                                        UserWarning, monitor.script_path, 1)
