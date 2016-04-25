@@ -148,6 +148,12 @@ class ItemLine(Line):
     value = ''
     pattern = re.compile('(?P<key>[A-z.()]+) ?= ?(?P<value>.*)')
 
+    def __str__(self):
+        return '{} = {}'.format(self.key, self.value)
+
+    def __repr__(self):
+        return self.__str__()
+
     def __eq__(self, other):
         return self.key == other.key and self.value == other.value
 

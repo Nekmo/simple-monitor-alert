@@ -1,7 +1,8 @@
+import os
 import subprocess
 import warnings
 
-from simple_monitor_alert.exceptions import InvalidScriptLineError, InvalidScriptLineWarning
+from simple_monitor_alert.exceptions import InvalidScriptLineError, InvalidScriptLineLogging
 from simple_monitor_alert.lines import Item, Line, ItemLine
 
 TIMEOUT = 5
@@ -20,10 +21,11 @@ class Monitor(object):
         popen.wait(TIMEOUT)
         lines = self.parse_lines(popen.stdout.readlines())
         self.lines = list(lines)
+        print('\n'.join(map(str, self.lines)))
         self.items = self.get_items(self.lines)
         self.headers = self.get_headers(self.lines)
 
-    def parse_lines(self, lines, on_error=InvalidScriptLineWarning):
+    def parse_lines(self, lines, on_error=InvalidScriptLineLogging):
         for i, line in enumerate(lines):
             try:
                 yield Line.parse(line, self)
@@ -32,6 +34,8 @@ class Monitor(object):
                     warnings.warn_explicit(on_error(line, self.script_path), on_error, self.script_path, i + 1)
                 elif issubclass(on_error, Exception):
                     raise on_error(line, self.script_path)
+                else:
+                    on_error(line, self.script_path)
 
     def get_items(self, lines):
         items = {}
@@ -49,3 +53,34 @@ class Monitor(object):
         for line in filter(lambda x: isinstance(x, ItemLine), lines):
             headers[line.key] = line.value
         return headers
+
+
+class Monitors(object):
+    monitors = None
+
+    def __init__(self, monitors_dir=None, settings_file=None, settings_dir=None):
+        self.monitors_dir, self.settings_file, self.settings_dir = monitors_dir, settings_file, settings_dir
+
+    def get_monitors(self, monitors_dir=None, settings_dir=None):
+        if self.monitors:
+            return self.monitors
+        monitors_dir = monitors_dir or self.monitors_dir
+        settings_dir = settings_dir or self.settings_dir
+        self.monitors = [self.get_monitor(os.path.join(monitors_dir, file), settings_dir)
+                         for file in os.listdir(monitors_dir)]
+        return self.monitors
+
+    @staticmethod
+    def get_monitor(script_path, settings_dir=None):
+        config_path = os.path.join(settings_dir, os.path.splitext("script_path")[0] + '.ini')
+        if not os.path.lexists(config_path):
+            config_path = None
+        return Monitor(script_path, config_path)
+
+    def execute_all(self):
+        for monitor in self.get_monitors():
+            try:
+                monitor.execute()
+            except PermissionError:
+                warnings.warn_explicit('No permissions for monitor. Check execution perms and read perms.',
+                                       UserWarning, monitor.script_path, 1)

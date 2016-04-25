@@ -1,4 +1,6 @@
+import logging
 
+logger = logging.getLogger('sma')
 
 class InvalidScriptLineBase:
     def __init__(self, line, script_path):
@@ -28,4 +30,6 @@ class InvalidScriptLineWarning(InvalidScriptLineBase, SyntaxWarning):
 
 
 class InvalidScriptLineLogging(InvalidScriptLineBase):
-    pass
+    def __init__(self, line, script_path):
+        super(InvalidScriptLineLogging, self).__init__(line, script_path)
+        logger.warning('{}: invalid line: {}'.format(script_path, line))
