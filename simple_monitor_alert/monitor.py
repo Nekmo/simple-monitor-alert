@@ -1,9 +1,12 @@
 import os
 import subprocess
 import warnings
+import logging
 
 from simple_monitor_alert.exceptions import InvalidScriptLineError, InvalidScriptLineLogging
 from simple_monitor_alert.lines import Item, Line, ItemLine
+
+logger = logging.getLogger('sma')
 
 TIMEOUT = 5
 
@@ -21,9 +24,23 @@ class Monitor(object):
         popen.wait(TIMEOUT)
         lines = self.parse_lines(popen.stdout.readlines())
         self.lines = list(lines)
-        print('\n'.join(map(str, self.lines)))
         self.items = self.get_items(self.lines)
         self.headers = self.get_headers(self.lines)
+        self.evaluate_items()
+
+    def evaluate_items(self, items_list=None):
+        items = items_list or self.items.values()
+        for item in items:
+            self.print_evaluate(item)
+
+    def print_evaluate(self, item):
+        result = item.evaluate()
+        level = 'success' if result else item.get_item_value('level') or 'warning'
+        msg = 'Trigger: [{}] {}'.format(level, item.get_verbose_name())
+        extra_info = item.get_item_value('extra_info')
+        if extra_info:
+            msg += ': {}'.format(extra_info)
+        getattr(logger, 'info' if result else 'warning')(msg)
 
     def parse_lines(self, lines, on_error=InvalidScriptLineLogging):
         for i, line in enumerate(lines):

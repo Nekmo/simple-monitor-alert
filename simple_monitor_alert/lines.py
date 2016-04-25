@@ -10,6 +10,56 @@ from simple_monitor_alert.exceptions import InvalidScriptLineError
 ENCODING = sys.getdefaultencoding()
 
 
+class Operator(object):
+    def __init__(self, value):
+        self.value = value
+
+    def match(self, other):
+        raise NotImplementedError
+
+    @staticmethod
+    def get_operator(operator_symbol):
+        try:
+            return {'<': LeOperator, '<=': LeOperator, '==': EqOperator, '!=': NeOperator, '>=': GeOperator,
+                    '>': GeOperator}[operator_symbol]
+        except:
+            raise ValueError('Invalid operator: {}'.format(operator_symbol))
+
+    @classmethod
+    def get_class(cls, operator_symbol, value):
+        return cls.get_operator(operator_symbol)(value)
+
+
+class LtOperator(Operator):
+    def match(self, other):
+        return other < self.value
+
+
+class LeOperator(Operator):
+    def match(self, other):
+        return other <= self.value
+
+
+class EqOperator(Operator):
+    def match(self, other):
+        return other == self.value
+
+
+class NeOperator(Operator):
+    def match(self, other):
+        return other != self.value
+
+
+class GeOperator(Operator):
+    def match(self, other):
+        return other >= self.value
+
+
+class GtOperator(Operator):
+    def match(self, other):
+        return other > self.value
+
+
 def regex_match_parser(value):
     if not value.startswith('/'):
         raise ValueError('Invalid regex function: It must start with slash.')
@@ -30,7 +80,7 @@ class MatchParser(object):
         self.functions = {'r': regex_match_parser}
         self.matcher = matcher
 
-    def matcher_delimiter(self, matcher):
+    def parse_delimiter(self, matcher):
         for delimiter in self.delimiters:
             # Match "text", 'text', f'text' ...
             pos = matcher.find(delimiter)
@@ -46,7 +96,7 @@ class MatchParser(object):
                 return matcher[len(delimiter):]
 
     @staticmethod
-    def matcher_common_types(match):
+    def parse_common_types(match):
         if match.isdigit():
             # Is int
             return int(match)
@@ -56,21 +106,40 @@ class MatchParser(object):
         except ValueError:
             pass
 
-    def parse(self, match=None):
+    def parse_operators(self, value):
+        value = value.lstrip(string.whitespace)
+        operator = value[0:2]
+        try:
+            operator_class = Operator.get_operator(operator)
+        except ValueError:
+            return
+        value = value.replace(operator, '', 1).strip(string.whitespace)
+        value = self.parse_value(value)
+        return operator_class(value)
+
+    def parse(self, match=None, matchers=None):
+        matchers = matchers or [self.parse_delimiter, self.parse_operators, self.parse_common_types]
         if match is None:
             match = self.matcher
-        for matcher in [self.matcher_delimiter, self.matcher_common_types]:
+        for matcher in matchers:
             parser_value = matcher(match)
             if parser_value is not None:
                 return parser_value
         return match
 
+    def parse_value(self, value):
+        return self.parse(value, [self.parse_common_types])
+
     def match(self, value):
         matcher = self.parse()
+        value = self.parse_value(value)
         try:
             return matcher.match(value)
         except AttributeError:
             return matcher == value
+
+    def __repr__(self):
+        return '<Matcher \'{}\' ({})>'.format(self.matcher, self.parse())
 
 
 class DefaultMatcher(object):
@@ -110,11 +179,24 @@ class Item(dict):
             return MatchParser(match)
         return match
 
+    def get_item_value(self, item_name, default=None):
+        try:
+            return self[item_name].value
+        except KeyError:
+            return default
+
     def evaluate(self, value=None):
         if value is None:
             value = self['value'].value
         matcher = self.get_matcher()
         return matcher.match(value)
+
+    def get_verbose_name(self):
+        name = self.get('name')
+        if name:
+            return name.value
+        else:
+            return self.name
 
 
 class Line(object):
@@ -146,7 +228,7 @@ class Line(object):
 class ItemLine(Line):
     key = ''
     value = ''
-    pattern = re.compile('(?P<key>[A-z.()]+) ?= ?(?P<value>.*)')
+    pattern = re.compile('(?P<key>[A-z0-9.()_]+) ?= ?(?P<value>.*)')
 
     def __str__(self):
         return '{} = {}'.format(self.key, self.value)
