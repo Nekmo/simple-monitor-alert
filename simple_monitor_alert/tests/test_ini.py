@@ -2,7 +2,7 @@ import os
 import unittest
 
 from simple_monitor_alert.monitor import Monitor
-from simple_monitor_alert.lines import Item, ItemLine
+from simple_monitor_alert.lines import Observable, RawItemLine
 
 DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 

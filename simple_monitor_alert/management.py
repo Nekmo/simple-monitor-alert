@@ -60,5 +60,5 @@ def execute_from_command_line(argv=None):
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
 
-    sma = SMA(args.monitors_dir, args.config)
-    sma.execute_all()
+    sma = SMA(args.monitors_dir, args.alerts_dir, args.config)
+    sma.evaluate_and_alert()

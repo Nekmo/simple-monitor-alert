@@ -92,6 +92,17 @@ def regex_match_parser(value):
     return re.compile(value, flags)
 
 
+def get_observables_from_lines(lines):
+    observables = {}
+    lines_items = filter(lambda x: isinstance(x, ItemLine), lines)
+    for line in lines_items:
+        name, group = Observable.get_name_group(line.key)
+        if (name, group) not in observables:
+            observables[name, group] = Observable(name, group)
+        observables[name, group].add_line(line)
+    return observables
+
+
 class MatchParser(object):
     delimiters = ['"', "'"]
 
@@ -166,14 +177,11 @@ class DefaultMatcher(object):
 
 
 # TODO: Observable
-class Item(dict):
+class Observable(dict):
     group_pattern = re.compile('(?P<name>[A-z]+)\((?P<group>[A-z]+)\) *')
 
-    def __init__(self, monitor, name, group=None):
-        super(Item, self).__init__()
-        from simple_monitor_alert.monitor import Monitor
-        assert isinstance(monitor, Monitor)
-        self.monitor = monitor
+    def __init__(self, name, group=None):
+        super(Observable, self).__init__()
         self.name = name
         self.group = group
 
@@ -199,9 +207,9 @@ class Item(dict):
             return MatchParser(match)
         return match
 
-    def get_item_value(self, item_name, default=None):
+    def get_line_value(self, line_key, default=None):
         try:
-            return self[item_name].value
+            return self[line_key].value
         except KeyError:
             return default
 
@@ -212,14 +220,38 @@ class Item(dict):
         return matcher.match(value)
 
     def get_verbose_name(self):
-        name = self.get('name')
-        if name:
-            return name.value
-        else:
-            return self.name
+        return self.get_line_value('name', self.name)
+
+    def get_param(self, default=None):
+        return self.get_line_value('param', default)
+
+    def update_usign_observable(self, observable):
+        if observable is None:
+            return
+        self.update(observable)
 
 
-class Line(object):
+
+class KeyValueLine(object):
+    def __init__(self, key, value):
+        self.key, self.value = key, value
+
+
+class ItemLine(KeyValueLine):
+    def __init__(self, key, value):
+        super(ItemLine, self).__init__(key, value)
+
+    def __str__(self):
+        return '{} = {}'.format(self.key, self.value)
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __eq__(self, other):
+        return self.key == other.key and self.value == other.value
+
+
+class RawLine(object):
     pattern = None
 
     def __init__(self, line, monitor):
@@ -237,7 +269,7 @@ class Line(object):
         line = line.strip(string.whitespace)
         if not line or line.startswith('#'):
             return
-        for line_type_class in [ItemLine]:
+        for line_type_class in [RawItemLine]:
             try:
                 return line_type_class(line, monitor)
             except InvalidScriptLineError:
@@ -245,22 +277,13 @@ class Line(object):
         raise InvalidScriptLineError(line, monitor.script_path)
 
 
-class ItemLine(Line):
+class RawItemLine(RawLine, ItemLine):
     key = ''
     value = ''
     pattern = re.compile('(?P<key>[A-z0-9.()_]+) ?= ?(?P<value>.*)')
 
-    def __str__(self):
-        return '{} = {}'.format(self.key, self.value)
 
-    def __repr__(self):
-        return self.__str__()
-
-    def __eq__(self, other):
-        return self.key == other.key and self.value == other.value
-
-
-class Header(Line):
+class RawHeader(RawLine):
     key = ''
     value = ''
     pattern = re.compile('(?P<key>[A-z]+) ?: ?(?P<value>.*)')
