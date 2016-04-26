@@ -13,3 +13,4 @@ El siguiente es un listado de los posibles parámetros que puede tener un item:
 * **extra_info** (opcional): En ocasiones, puede quererse mostrar más información en la alerta sin necesidad de
   modificar el nombre de la misma. Dicha información puede ubicarse aquí.
 * **enabled** (opcional): Por defecto, "yes". Puede cambiarse a "no".
+* **seconds** (opcional): Tiempo durante el cual debe estar en ejecución el fallo para mandarse la alerta.

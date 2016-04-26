@@ -100,10 +100,10 @@ class Monitors(object):
     def get_monitor(script_path):
         return Monitor(script_path)
 
-    def execute_all(self):
+    def execute_all(self, use_config=True):
         for monitor in self.get_monitors():
             try:
-                yield monitor.execute()
+                items = monitor.execute()
             except PermissionError:
                 warnings.warn_explicit('No permissions for monitor. Check execution perms and read perms.',
                                        UserWarning, monitor.script_path, 1)

@@ -165,6 +165,7 @@ class DefaultMatcher(object):
     value = re.compile('yes|true|0', re.IGNORECASE)
 
 
+# TODO: Observable
 class Item(dict):
     group_pattern = re.compile('(?P<name>[A-z]+)\((?P<group>[A-z]+)\) *')
 
