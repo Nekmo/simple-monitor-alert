@@ -18,8 +18,9 @@ Observable: {observable_name}
 """
 
 class AlertBase(object):
-    def __init__(self, config):
+    def __init__(self, config, section):
         self.config = config
+        self.section = section
         self.init()
 
     def init(self):
@@ -30,10 +31,34 @@ class AlertCommand(AlertBase):
     pass
 
 
+class ObservableCommunication(dict):
+    alert_kwargs_keys = ('observable_name', 'name', 'extra_info', 'level', 'fail', 'condition')
+
+    def __init__(self, observable, fail, **kwargs):
+        super(ObservableCommunication, self).__init__(**kwargs)
+        self.observable = observable
+        self['fail'] = fail
+        self['level'] = self.observable.get_line_value('level', 'warning')
+        self['subject'] = '[{}] {}'.format('ERROR' if fail else 'SOLVED', observable.get_verbose_name())
+        self['name'] = observable.get_verbose_name()
+        self['observable_name'] = observable.name
+        self['extra_info'] = observable.get_line_value('extra_info') or '(No more info available)'
+        self['condition'] = get_verbose_condition(observable)
+        self['message'] = self.get_message()
+
+    def get_message(self):
+        return DEFAULT_MESSAGE.format(condition_status='Failed' if self['fail'] else 'Successful', **self)
+
+    def alert_kwargs(self):
+        return {key: value for key, value in self.items() if key in self.alert_kwargs_keys}
+
+
+
 class Alerts(list):
-    def __init__(self, config, alerts_dir):
+    def __init__(self, sma, alerts_dir):
         super(Alerts, self).__init__()
-        self.config = config
+        self.sma = sma
+        self.config = sma.config
         self.alerts_dir = alerts_dir
         sys.path.append(alerts_dir)
         self.valid_alerts = self.get_valid_alerts()
@@ -50,37 +75,34 @@ class Alerts(list):
                 alert = section
             else:
                 continue
-            yield alert, dict(self.config.items(alert))
+            yield alert, dict(self.config.items(alert)), section
 
-    def _import_python_alert(self, alert, config):
+    def _import_python_alert(self, alert, config, section):
         if not self.valid_alerts[alert].endswith('.py'):
             return
         module = importlib.import_module(alert)
         if getattr(module, 'SUPPORT_ALERT_IMPORT'):
-            return getattr(module, 'Alert')(config)
+            return getattr(module, 'Alert')(config, section)
 
-    def _get_alert_command(self, alert, config):
+    def _get_alert_command(self, alert, config, section):
         raise NotImplementedError
 
     def get_alerts(self):
         self.clear()
-        for alert, alert_config in self.get_alerts_config():
-            module = self._import_python_alert(alert, alert_config) or self._get_alert_command(alert, alert_config)
+        for alert, alert_config, section in self.get_alerts_config():
+            module = self._import_python_alert(alert, alert_config, section) or \
+                     self._get_alert_command(alert, alert_config, section)
             self.append(module)
 
     def get_valid_alerts(self):
         return {os.path.splitext(f)[0]: os.path.join(self.alerts_dir, f) for f in os.listdir(self.alerts_dir)}
 
-    def send_observable_result(self, observable, fail=True):
-        subject = '[{}] {}'.format('ERROR' if fail else 'SOLVED', observable.get_verbose_name())
-        name = observable.get_verbose_name()
-        extra_info = observable.get_line_value('extra_info') or '(No more info available)'
-        condition = get_verbose_condition(observable)
-        message = DEFAULT_MESSAGE.format(name=name, observable_name=observable.name,
-                                         extra_info=extra_info,
-                                         condition=condition,
-                                         condition_status='Failed' if fail else 'Successful')
+    def send_alerts(self, observable, fail=True):
+        communication = ObservableCommunication(observable, fail)
         for alert in self:
-            alert.send(subject, message, observable_name=observable.name, name=observable.get_verbose_name(),
-                       extra_info=extra_info, level=observable.get_line_value('level', 'warning'), fail=fail,
-                       condition=condition)
+            if alert.section in self.sma.results.get_observable_result(observable)['alerted']:
+                continue
+            success = alert.send(communication['subject'], communication['message'], **communication.alert_kwargs())
+            if success:
+                self.sma.results.add_alert_to_observable_result(observable, alert.section)
+        return True

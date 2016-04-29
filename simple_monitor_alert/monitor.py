@@ -125,6 +125,7 @@ class Monitors(object):
             if use_config:
                 self.update_observables(monitor, observables)
             for observable in observables:
+                observable.set_monitor(monitor)
                 yield observable
 
     def update_observables(self, monitor, observables):

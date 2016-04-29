@@ -179,6 +179,7 @@ class DefaultMatcher(object):
 # TODO: Observable
 class Observable(dict):
     group_pattern = re.compile('(?P<name>[A-z]+)\((?P<group>[A-z]+)\) *')
+    monitor = None
 
     def __init__(self, name, group=None):
         super(Observable, self).__init__()
@@ -229,6 +230,9 @@ class Observable(dict):
         if observable is None:
             return
         self.update(observable)
+
+    def set_monitor(self, monitor):
+        self.monitor = monitor
 
 
 
