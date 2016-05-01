@@ -55,14 +55,14 @@ class ObservableCommunication(dict):
 
 
 class Alerts(list):
-    def __init__(self, sma, alerts_dir):
+    def __init__(self, sma, alerts_dir, alerts=None, valid_alerts=None):
         super(Alerts, self).__init__()
         self.sma = sma
         self.config = sma.config
         self.alerts_dir = alerts_dir
         sys.path.append(alerts_dir)
-        self.valid_alerts = self.get_valid_alerts()
-        self.get_alerts()
+        self.valid_alerts = valid_alerts or self.get_valid_alerts()
+        self.set_alerts(alerts)
 
     def get_alerts_config(self):
         for section in self.config.sections():
@@ -88,11 +88,15 @@ class Alerts(list):
         raise NotImplementedError
 
     def get_alerts(self):
-        self.clear()
         for alert, alert_config, section in self.get_alerts_config():
             module = self._import_python_alert(alert, alert_config, section) or \
                      self._get_alert_command(alert, alert_config, section)
-            self.append(module)
+            yield module
+
+    def set_alerts(self, iterator=None):
+        iterator = iterator or self.get_alerts()
+        self.clear()
+        self.extend(iterator)
 
     def get_valid_alerts(self):
         return {os.path.splitext(f)[0]: os.path.join(self.alerts_dir, f) for f in os.listdir(self.alerts_dir)}
@@ -105,4 +109,3 @@ class Alerts(list):
             success = alert.send(communication['subject'], communication['message'], **communication.alert_kwargs())
             if success:
                 self.sma.results.add_alert_to_observable_result(observable, alert.section)
-        return True

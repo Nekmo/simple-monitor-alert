@@ -1,0 +1,54 @@
+from simple_monitor_alert.sma import JSONFile, ObservableResults, Config
+
+
+class FakeJSONFile(JSONFile):
+    def __init__(self, data, **kwargs):
+        super(FakeJSONFile, self).__init__('/Fake-JSON-File', **kwargs)
+        self.update(data)
+
+    def read(self):
+        pass
+
+    def write(self):
+        pass
+
+
+class FakeObservableResults(FakeJSONFile, ObservableResults):
+    monitor = None
+
+    def __init__(self, data=None):
+        data = data or {'monitors': {}}
+        super(FakeObservableResults, self).__init__(data)
+
+    def get_observable_result(self, observable):
+        monitor = self['monitors'].get(getattr(observable, 'monitor', self.monitor), {})
+        result = monitor.get(observable.name, self.get_default_observable_result())
+        monitor[observable.name] = result
+        self['monitors'][getattr(observable, 'monitor', self.monitor)] = monitor
+        return result
+
+
+class FakeSMA(object):
+    def __init__(self, config=None):
+        self.results = FakeObservableResults()
+        self.config = config
+
+
+class FakeAlert(object):
+    executions = 0
+
+    def __init__(self, section):
+        self.section = section
+
+    def send(self, *args, **kwargs):
+        self.executions += 1
+        return True
+
+
+class FakeConfig(Config):
+    def __init__(self, data):
+        super(FakeConfig, self).__init__('/Fake-Config-File')
+        self._data = data
+
+    def items(self, section=None, **kwargs):
+        return self._data[section]
