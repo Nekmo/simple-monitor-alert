@@ -65,7 +65,7 @@ def execute_from_command_line(argv=None):
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
 
-    if not args.which:
+    if not getattr(args, 'which', None):
         sma = SMA(args.monitors_dir, args.alerts_dir, args.config)
         sma.evaluate_and_alert()
     elif args.which == 'service':

@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
+if [[ ! -f /proc/mdstat ]]; then
+    exit 0;
+fi
 
 IFS=$'\n'
-for line in `cat /tmp/mdstat | tail -n +2 | head -n -1`; do
+for line in `cat /proc/mdstat | tail -n +2 | head -n -1`; do
     if [[ ${line:0:1} != ' ' ]]; then
         device=`echo "$line" | awk '{print $1}'`
         errors=

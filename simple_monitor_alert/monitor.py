@@ -26,7 +26,8 @@ def get_verbose_condition(observable):
 def log_evaluate(observable, result=None):
     result = result or observable.evaluate()
     level = 'success' if result else observable.get_line_value('level') or 'warning'
-    msg = 'Trigger: [{}] {}. Result: {}'.format(level, observable.get_verbose_name(), get_verbose_condition(observable))
+    msg = 'Trigger: [{}] ({}) {}. Result: {}'.format(level, getattr(getattr(observable, 'monitor', None), 'name', '?'),
+                                                  observable.get_verbose_name(), get_verbose_condition(observable))
     extra_info = observable.get_line_value('extra_info')
     if extra_info:
         msg += '. Extra info: {}'.format(extra_info)
@@ -46,7 +47,7 @@ class Monitor(object):
         env = os.environ
         if parameters:
             env = env.copy()
-            env = env.update(parameters)
+            env.update(parameters)
         popen = subprocess.Popen([self.script_path], stdout=subprocess.PIPE, env=env)
         popen.wait(TIMEOUT)
         lines = self.parse_lines(popen.stdout.readlines())
@@ -107,7 +108,8 @@ class Monitors(object):
         observables = self.config.get_monitor_observables(monitor.name)
         if isinstance(observables, dict):
             observables = observables.values()
-        return list(filter(lambda x: x is not None, [observable.get_param() for observable in observables]))
+        return dict(filter(lambda x: x[1] is not None, [(observable.name, observable.get_param())
+                                                        for observable in observables]))
 
     def execute(self, monitor):
         parameters = self.get_monitor_params(monitor)

@@ -126,6 +126,13 @@ class MatchParser(object):
                 return matcher[len(delimiter):]
 
     @staticmethod
+    def parse_string(match):
+        if match.startswith("'") and match.endswith("'"):
+            return match[1:][:-1]
+        elif match.startswith('"') and match.endswith('"'):
+            return match[1:][:-1]
+
+    @staticmethod
     def parse_common_types(match):
         if match.isdigit():
             # Is int
@@ -144,26 +151,31 @@ class MatchParser(object):
         except ValueError:
             return
         value = value.replace(operator, '', 1).strip(string.whitespace)
-        value = self.parse_value(value)
+        value = self.parse(value)
         return operator_class(value)
 
     def parse(self, match=None, matchers=None):
         matchers = matchers or [self.parse_delimiter, self.parse_operators, self.parse_common_types]
         if match is None:
             match = self.matcher
+        return self.value_parse(match, matchers)
+
+    @staticmethod
+    def value_parse(match, matchers):
         for matcher in matchers:
             parser_value = matcher(match)
             if parser_value is not None:
                 return parser_value
         return match
 
-    def parse_value(self, value):
-        return self.parse(value, [self.parse_common_types])
+    @classmethod
+    def parse_value(cls, value):
+        return cls.value_parse(value, [cls.parse_common_types, cls.parse_string])
 
     def match(self, value):
         value = str(value)
         matcher = self.parse()
-        value = self.parse_value(value)
+        value = self.parse(value)
         try:
             return matcher.match(value)
         except AttributeError:
@@ -191,7 +203,7 @@ class Observable(dict):
         param = self.get_parameter(line.key)
         if param not in ['expected', 'value']:
             # TODO: provisional
-            line.value = MatchParser.parse_common_types(line.value)
+            line.value = MatchParser.parse_value(line.value)
         self[param] = line
 
     @staticmethod
