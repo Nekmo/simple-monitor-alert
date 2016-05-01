@@ -1,6 +1,6 @@
 import datetime
 import os
-
+import time
 import logging
 
 import json
@@ -19,7 +19,7 @@ if six.PY2:
 else:
     from configparser import ConfigParser, NoSectionError
 
-
+WAIT_SECONDS = 60
 logger = logging.getLogger('sma')
 
 var_directory = '/var/lib/simple-monitor-alert'
@@ -164,3 +164,12 @@ class SMA(object):
             log_evaluate(observable, result)
             yield observable, result
         self.results.write()
+
+
+class SMAService(SMA):
+    def start(self):
+        while True:
+            start_t = time.time()
+            self.evaluate_and_alert()
+            wait = WAIT_SECONDS - (time.time() - start_t)
+            time.sleep(wait if wait > 0 else 0)
