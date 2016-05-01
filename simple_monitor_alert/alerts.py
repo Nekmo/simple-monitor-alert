@@ -1,8 +1,12 @@
 import os
 import importlib
 import logging
+import sys
 
-from future.moves import sys
+import datetime
+import dateutil
+import dateutil.parser
+from dateutil.tz.tz import tzlocal
 
 from simple_monitor_alert.monitor import get_verbose_condition
 
@@ -104,7 +108,13 @@ class Alerts(list):
     def send_alerts(self, observable, fail=True):
         communication = ObservableCommunication(observable, fail)
         for alert in self:
+            seconds = observable.get_line_value('seconds', 0)
+            since = self.sma.results.get_observable_result(observable).get('since')
+            since = (dateutil.parser.parse(since) if since else datetime.datetime.now()).replace(tzinfo=tzlocal())
+            dt = datetime.datetime.now().replace(tzinfo=tzlocal())
             if alert.section in self.sma.results.get_observable_result(observable)['alerted']:
+                continue
+            elif seconds and dt - since <= datetime.timedelta(seconds=seconds):
                 continue
             success = alert.send(communication['subject'], communication['message'], **communication.alert_kwargs())
             if success:

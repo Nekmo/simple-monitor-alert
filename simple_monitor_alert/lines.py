@@ -161,6 +161,7 @@ class MatchParser(object):
         return self.parse(value, [self.parse_common_types])
 
     def match(self, value):
+        value = str(value)
         matcher = self.parse()
         value = self.parse_value(value)
         try:
@@ -187,7 +188,11 @@ class Observable(dict):
         self.group = group
 
     def add_line(self, line):
-        self[self.get_parameter(line.key)] = line
+        param = self.get_parameter(line.key)
+        if param not in ['expected', 'value']:
+            # TODO: provisional
+            line.value = MatchParser.parse_common_types(line.value)
+        self[param] = line
 
     @staticmethod
     def get_parameter(key):

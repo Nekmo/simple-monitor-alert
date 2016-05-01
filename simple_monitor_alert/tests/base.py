@@ -1,3 +1,5 @@
+from simple_monitor_alert.alerts import Alerts
+from simple_monitor_alert.lines import Observable, ItemLine
 from simple_monitor_alert.sma import JSONFile, ObservableResults, Config
 
 
@@ -52,3 +54,21 @@ class FakeConfig(Config):
 
     def items(self, section=None, **kwargs):
         return self._data[section]
+
+
+class TestBase(object):
+    def get_observable(self):
+        observable = Observable('test')
+        observable.add_line(ItemLine('test.expected', '20'))
+        observable.add_line(ItemLine('test.value', '19'))
+        return observable
+
+    def get_alerts(self, section, sma):
+        alerts_modules = [FakeAlert(section)]
+        alerts = Alerts(sma, '/Fake-Alerts-Dir', alerts_modules, [section])
+        return alerts
+
+    def get_sma(self, section):
+        config = FakeConfig({section: ()})
+        sma = FakeSMA(config)
+        return sma
