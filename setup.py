@@ -329,7 +329,7 @@ class SystemInstallCommand(install):
 
     def run(self):
         print('Starting Python module installation.')
-        install.run(self)
+        self.do_egg_install()
         print('-' * 80)
         print('Installing things that are not Python (system files).')
         for directory in [ENABLED_MONITORS_DIR, os.path.dirname(AVAILABLE_MONITORS_DIR)]:

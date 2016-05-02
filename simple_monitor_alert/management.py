@@ -10,7 +10,7 @@ from simple_monitor_alert.sma import SMA, SMAService
 
 SMA_INI_FILE = '/etc/simple-monitor-alert/sma.ini'
 MONITORS_DIR = '/etc/simple-monitor-alert/monitors-enabled/'
-ALERTS_DIR = '/etc/simple-monitor-alert/monitors-enabled/'
+ALERTS_DIR = '/etc/simple-monitor-alert/alerts/'
 
 
 def create_logger(name, level=logging.INFO):
