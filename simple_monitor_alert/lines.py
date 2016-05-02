@@ -92,13 +92,15 @@ def regex_match_parser(value):
     return re.compile(value, flags)
 
 
-def get_observables_from_lines(lines):
+def get_observables_from_lines(lines, params=None):
     observables = {}
+    params = params or {}
     lines_items = filter(lambda x: isinstance(x, ItemLine), lines)
     for line in lines_items:
         name, group = Observable.get_name_group(line.key)
         if (name, group) not in observables:
             observables[name, group] = Observable(name, group)
+            observables[name, group].set_param_used(params.get(name))
         observables[name, group].add_line(line)
     return observables
 
@@ -193,6 +195,7 @@ class DefaultMatcher(object):
 class Observable(dict):
     group_pattern = re.compile('(?P<name>[A-z]+)\((?P<group>[A-z]+)\) *')
     monitor = None
+    param_used = None
 
     def __init__(self, name, group=None):
         super(Observable, self).__init__()
@@ -241,6 +244,8 @@ class Observable(dict):
         return self.get_line_value('name', self.name)
 
     def get_param(self, default=None):
+        """Only applicable in configuration observables.
+        """
         return self.get_line_value('param', default)
 
     def get_verbose_name_group(self):
@@ -253,6 +258,12 @@ class Observable(dict):
 
     def set_monitor(self, monitor):
         self.monitor = monitor
+
+    def set_param_used(self, param_used):
+        """Parameter used in execution. Different to get_param.
+        """
+        self.param_used = param_used
+
 
 
 class KeyValueLine(object):

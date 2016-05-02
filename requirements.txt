@@ -1,0 +1,6 @@
+future==0.15.2
+pyTelegramBotAPI==2.0.3
+python-dateutil==2.5.3
+requests==2.9.1
+six==1.10.0
+wheel==0.24.0

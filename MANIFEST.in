@@ -1,0 +1,4 @@
+include requirements.txt
+recursive-include alerts *.py *.sh
+recursive-include monitors *.py *.sh
+recursive-include simple_monitor_alert/tests *.ini

@@ -11,5 +11,5 @@ for part_data in `df -h`; do
     echo "pcnt_use($device).expected = <= 80"
     echo "pcnt_use($device).value = "`echo $part_data | awk '{ print substr($5, 1, length($5)-1) }'`;
     echo -n "pcnt_use($device).extra_info = 'Space: "`echo $part_data | awk '{ print $3 }'`"/";
-    echo `echo $part_data | awk '{ print $3 }'`"'"
+    echo `echo $part_data | awk '{ print $2 }'`"'"
 done

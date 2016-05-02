@@ -19,7 +19,7 @@ def get_verbose_condition(observable):
     expected = observable.get_matcher()
     if expected:
         expected = expected.parse()
-    if isinstance(expected, six.string_types):
+    if isinstance(expected, six.string_types) or isinstance(expected, int):
         expected = '== {}'.format(expected)
     return '{} {}'.format(value, expected)
 
@@ -27,9 +27,11 @@ def get_verbose_condition(observable):
 def log_evaluate(observable, result=None):
     result = result or observable.evaluate()
     level = 'success' if result else observable.get_line_value('level') or 'warning'
-    msg = 'Trigger: [{}] ({}) {}. Result: {}'.format(level, getattr(getattr(observable, 'monitor', None), 'name', '?'),
-                                                     observable.get_verbose_name_group(),
-                                                     get_verbose_condition(observable))
+    msg = 'Trigger: [{}] ({}) {}. '.format(level, getattr(getattr(observable, 'monitor', None), 'name', '?'),
+                                           observable.get_verbose_name_group())
+    msg += ('Result: {}' if result else 'Assertion {} failed').format(get_verbose_condition(observable))
+    if observable.param_used:
+        msg += '. Param used: {}'.format(observable.param_used)
     extra_info = observable.get_line_value('extra_info')
     if extra_info:
         msg += '. Extra info: {}'.format(extra_info)
@@ -54,7 +56,7 @@ class Monitor(object):
         popen.wait(TIMEOUT)
         lines = self.parse_lines(popen.stdout.readlines())
         self.lines = list(lines)
-        self.items = self.get_observables(self.lines)
+        self.items = self.get_observables(self.lines, parameters)
         self.headers = self.get_headers(self.lines)
         # self.evaluate_items()
         return self.items.values()
@@ -77,8 +79,8 @@ class Monitor(object):
                     on_error(line, self.script_path)
 
     @staticmethod
-    def get_observables(lines):
-        return get_observables_from_lines(lines)
+    def get_observables(lines, params=None):
+        return get_observables_from_lines(lines, params)
 
     @staticmethod
     def get_headers(lines):
@@ -120,22 +122,22 @@ class Monitors(object):
         names_parameters = defaultdict(list)
         for parameter, value in parameters.items():
             parameter = parameter.split('(')[0]
-            names_parameters[parameter].append((parameter, value))
-        cycles_num = len(sorted(names_parameters.items(), key=lambda x: len(x[1]), reverse=True)[0][1])
+            names_parameters[parameter].append(value)
+        cycles_num = len(sorted(names_parameters.items(), key=lambda x: len(x), reverse=True)[0])
         cycles = []
         for i in range(cycles_num):
-            cycle = []
+            cycle = {}
             cycles.append(cycle)
-            for values in names_parameters.values():
-                cycle.append(values[i % len(values)])
+            for key, values in names_parameters.items():
+                cycle[key] = values[i % len(values)]
         return cycles
 
     def execute(self, monitor):
         parameters = self.get_monitor_params(monitor)
         observables = []
         try:
-            for parameters in self.get_parameters_cycles(parameters):
-                observables.extend(monitor.execute(parameters))
+            for params in self.get_parameters_cycles(parameters):
+                observables.extend(monitor.execute(params))
         except PermissionError:
             warnings.warn_explicit('No permissions for monitor. Check execution perms and read perms.',
                                    UserWarning, monitor.script_path, 1)
