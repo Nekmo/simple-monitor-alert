@@ -1,0 +1,13 @@
+[Unit]
+Description=Simple Monitor Alert Service
+After=syslog.target
+
+[Service]
+Type=simple
+User=sma
+ExecStart=/usr/bin/sma --quiet service
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

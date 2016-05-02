@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Service Status monitor.
+# Verify that the service is running.
+# It requires a parameter: service name.
 
 echo "service_status.name = 'Service (daemon) status'."
 echo "service_status.expected = 'active'"

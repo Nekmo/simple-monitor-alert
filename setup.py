@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import distutils
+import filecmp
 import shutil
 import subprocess
 
@@ -30,9 +31,13 @@ AVAILABLE_MONITORS_DIR = '/etc/simple-monitor-alert/monitors-available'
 MONITORS_DIR = '/usr/lib/simple-monitor-alert/monitors'
 ALERTS_DIR = '/usr/lib/simple-monitor-alert/alerts'
 AVAILABLE_ALERTS_DIR = '/etc/simple-monitor-alert/alerts'
-DEFAULT_ENABLEDS_MONITORS = ['hdds.sh', 'smart.sh', 'system.sh']
+SMA_TEMPLATE_FILENAME = 'sma-template.ini'
+SMA_FILE = '/etc/simple-monitor-alert/sma.ini'
+DEFAULT_ENABLEDS_MONITORS = ['hdds.sh', 'system.sh']
 USERNAME = 'sma'
 VAR_DIRECTORY = '/var/lib/simple-monitor-alert'
+
+SERVICES = [('daemons/sma.service', '/usr/lib/systemd/system/sma.service')]
 
 #  Información del autor
 from setuptools.command.install import install
@@ -305,6 +310,20 @@ CLASSIFIERS.extend([
 ])
 
 
+def create_backup(file):
+    if not os.path.lexists(file):
+        return
+    backup_file = file + '.bak'
+    i = 0
+    while os.path.lexists(backup_file):
+        new_backup_file = '{}{}'.format(backup_file, i)
+        if not os.path.lexists(new_backup_file):
+            backup_file = new_backup_file
+            break
+        i += 1
+    shutil.move(file, backup_file)
+
+
 class SystemInstallCommand(install):
     """Custom install setup to help run shell commands (outside shell) before installation"""
 
@@ -339,6 +358,15 @@ class SystemInstallCommand(install):
         uid = pwd.getpwnam(USERNAME).pw_uid
         gid = grp.getgrnam("root").gr_gid
         os.chown(VAR_DIRECTORY, uid, gid)
+        print('Copying services')
+        for src, dest in SERVICES:
+            if filecmp.cmp(src, dest):
+                continue
+            create_backup(dest)
+            shutil.copy(src, dest)
+        print('Copying sma template file')
+        if not os.path.lexists(SMA_FILE):
+            shutil.copy(os.path.join(dir_path, SMA_TEMPLATE_FILENAME), SMA_FILE)
 
 
 setup(

@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Mdadm monitor
+# Check that no RAIDS is degraded.
+# No parameters required.
+
 if [[ ! -f /proc/mdstat ]]; then
     exit 0;
 fi

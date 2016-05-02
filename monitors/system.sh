@@ -3,7 +3,8 @@
 # - CPU
 # - RAM
 # - SWAP
-# No arguments required.
+# No parameters required.
+
 echo "cpu.name = 'CPU percentage usage'"
 echo "cpu.expected= <= 80"
 echo "cpu.seconds = 500"

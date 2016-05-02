@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Hdds monitor.
+# Check the free space on partitions.
+# No parameters required.
+
 
 IFS=$'\n'
 for part_data in `df -h`; do
