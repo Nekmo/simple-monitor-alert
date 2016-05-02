@@ -150,7 +150,7 @@ class SMA(object):
 
     def alert_all(self, observables, fail=True):
         for observable in observables:
-            notified = self.alerts.send_alerts(observable, fail)
+            self.alerts.send_alerts(observable, fail)
         self.results.write()
 
     def execute_all(self):

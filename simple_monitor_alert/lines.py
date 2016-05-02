@@ -243,6 +243,9 @@ class Observable(dict):
     def get_param(self, default=None):
         return self.get_line_value('param', default)
 
+    def get_verbose_name_group(self):
+        return '{}{}'.format(self.name, '({})'.format(self.group) if self.group else '')
+
     def update_usign_observable(self, observable):
         if observable is None:
             return
@@ -250,7 +253,6 @@ class Observable(dict):
 
     def set_monitor(self, monitor):
         self.monitor = monitor
-
 
 
 class KeyValueLine(object):

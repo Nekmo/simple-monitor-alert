@@ -2,6 +2,7 @@ import os
 import subprocess
 import warnings
 import logging
+from collections import defaultdict
 
 import six
 
@@ -27,7 +28,8 @@ def log_evaluate(observable, result=None):
     result = result or observable.evaluate()
     level = 'success' if result else observable.get_line_value('level') or 'warning'
     msg = 'Trigger: [{}] ({}) {}. Result: {}'.format(level, getattr(getattr(observable, 'monitor', None), 'name', '?'),
-                                                  observable.get_verbose_name(), get_verbose_condition(observable))
+                                                     observable.get_verbose_name_group(),
+                                                     get_verbose_condition(observable))
     extra_info = observable.get_line_value('extra_info')
     if extra_info:
         msg += '. Extra info: {}'.format(extra_info)
@@ -108,18 +110,41 @@ class Monitors(object):
         observables = self.config.get_monitor_observables(monitor.name)
         if isinstance(observables, dict):
             observables = observables.values()
-        return dict(filter(lambda x: x[1] is not None, [(observable.name, observable.get_param())
+        return dict(filter(lambda x: x[1] is not None, [(observable.get_verbose_name_group(), observable.get_param())
                                                         for observable in observables]))
+
+    @staticmethod
+    def get_parameters_cycles(parameters):
+        if not parameters:
+            return [{}]
+        names_parameters = defaultdict(list)
+        for parameter, value in parameters.items():
+            parameter = parameter.split('(')[0]
+            names_parameters[parameter].append((parameter, value))
+        cycles_num = len(sorted(names_parameters.items(), key=lambda x: len(x[1]), reverse=True)[0][1])
+        cycles = []
+        for i in range(cycles_num):
+            cycle = []
+            cycles.append(cycle)
+            for values in names_parameters.values():
+                cycle.append(values[i % len(values)])
+        return cycles
 
     def execute(self, monitor):
         parameters = self.get_monitor_params(monitor)
+        observables = []
         try:
-            observables = monitor.execute(parameters)
+            for parameters in self.get_parameters_cycles(parameters):
+                observables.extend(monitor.execute(parameters))
         except PermissionError:
             warnings.warn_explicit('No permissions for monitor. Check execution perms and read perms.',
                                    UserWarning, monitor.script_path, 1)
             return []
-        return observables
+        new_observables = []
+        for observable in observables:
+            if observable not in new_observables:
+                new_observables.append(observable)
+        return new_observables
 
     def execute_all(self, use_config=True):
         for monitor in self.get_monitors():
