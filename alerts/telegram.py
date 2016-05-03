@@ -11,7 +11,7 @@ import dateutil
 import dateutil.tz
 
 
-from simple_monitor_alert.sma import create_file, var_directory, JSONFile
+from simple_monitor_alert.sma import create_file, get_var_directory, JSONFile
 
 if sys.version_info >= (3,2):
     from html import escape
@@ -48,7 +48,7 @@ class Telegram(AlertBase):
     def init(self):
         token = self.config.get('token')
         self.bot = telebot.TeleBot(token)
-        self.telegram_cache = JSONFile(create_file(os.path.join(var_directory, 'telegram-cache.json'), {
+        self.telegram_cache = JSONFile(create_file(os.path.join(get_var_directory(), 'telegram-cache.json'), {
             'chat_ids': {},
             'version': __version__,
         }))

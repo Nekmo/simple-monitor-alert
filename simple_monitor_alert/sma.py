@@ -31,7 +31,7 @@ def validate_write_dir(directory, log=lambda x: x):
         log('{} exists but the destination does not exist. Is a broken link?'.format(directory))
         return False
     try:
-        os.makedirs(directory)
+        os.makedirs(directory, exist_ok=True)
     except OSError:
         log('No write permissions to the directory {}.'.format(directory))
         return False
