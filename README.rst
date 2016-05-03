@@ -41,7 +41,7 @@ A simple monitor with alerts for Unix/Linux under the KISS philosophy. Keep It S
 
 1. Install it from Pypi::
 
-    sudo pip install simple-monitor-alert
+    $ sudo pip install simple-monitor-alert
 
 2. Edit `/etc/simple-monitor-alert/sma.ini` and defines the recipient of the alerts::
 
@@ -51,11 +51,11 @@ A simple monitor with alerts for Unix/Linux under the KISS philosophy. Keep It S
 3. Execute sma::
 
     # Just once:
-    sma
+    $ sma
     # or... Run as a service (daemon)
-    sma service
+    $ sma service
     # or... Run usign system service:
-    sudo systemctl start sma
+    $ sudo systemctl start sma
 
 And yes, that's it!
 
@@ -64,11 +64,10 @@ And yes, that's it!
 
 Files and directories:
 
-  - `/etc/simple-monitor-alert/sma.ini` (file): all-in-one config file. Configure monitors and alerts methods.
-  - `/etc/simple-monitor-alert/monitors-available` (directory): All monitors available for usage. You can create
-  monitors here.
-  - `/etc/simple-monitor-alert/monitors-enabled` (directory): All monitors that are here are activated.
-  - `/etc/simple-monitor-alert/alerts` (directory): Alerts methods available. You need to configure them in sma.ini.
+  * `/etc/simple-monitor-alert/sma.ini` (file): all-in-one config file. Configure monitors and alerts methods.
+  * `/etc/simple-monitor-alert/monitors-available` (directory): All monitors available for usage. You can create monitors here.
+  * `/etc/simple-monitor-alert/monitors-enabled` (directory): All monitors that are here are activated.
+  * `/etc/simple-monitor-alert/alerts` (directory): Alerts methods available. You need to configure them in sma.ini.
 
 
 Enable and disable monitors
