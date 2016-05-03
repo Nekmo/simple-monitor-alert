@@ -20,9 +20,8 @@ else:
     from configparser import ConfigParser, NoSectionError
 
 WAIT_SECONDS = 60
+DEFAULT_VAR_DIRECTORY = os.environ.get('VAR_DIRECTORY', '/var/lib/simple-monitor-alert')
 logger = logging.getLogger('sma')
-
-var_directory = '/var/lib/simple-monitor-alert'
 
 
 def validate_write_dir(directory, log=lambda x: x):
@@ -48,22 +47,22 @@ def create_file(path, content=''):
     return path
 
 
-if not validate_write_dir(var_directory, logger.warning):
-    valid_candidate = False
+def get_var_directory():
+    var_directory = DEFAULT_VAR_DIRECTORY
+    if validate_write_dir(var_directory, logger.warning):
+        return var_directory
     for candidate in [os.path.expanduser('~/.local/var/lib/simple-monitor-alert'), '/tmp/simple-monitor-alert']:
         if validate_write_dir(candidate):
-            valid_candidate = True
             logger.info('Usign {} directory for var content, but {} is recommended.'.format(candidate, var_directory))
-            var_directory = candidate
-            break
-    if not valid_candidate:
-        import getpass
-        OSError('{} is not writable by {} user'.format(var_directory, getpass.getuser()))
+            return candidate
+    import getpass
+    raise OSError('{} is not writable by {} user'.format(var_directory, getpass.getuser()))
+
 
 # noinspection PyTypeChecker
-results_file = create_file(os.path.join(var_directory, 'results.json'), {
+results_file = create_file(os.path.join(get_var_directory(), 'results.json'), {
     'version': __version__,
-    'monitors': {},  # {'since': ..., 'last_update': ...}
+    'monitors': {},
 })
 
 
