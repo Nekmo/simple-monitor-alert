@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import distutils
 import filecmp
+import getpass
 import shutil
 import subprocess
 
@@ -84,7 +85,7 @@ PLATFORMS = [
     # 'android'
 ]
 ROOT_INCLUDE = ['requirements.txt', 'VERSION', 'LICENSE.txt']
-PYTHON_VERSIONS = ['2.6-2.7', '3.3-3.5']  # or ranges: 3.1-3.5, 2.6-3.4...
+PYTHON_VERSIONS = ['2.7', '3.3-3.5']  # or ranges: 3.1-3.5, 2.6-3.4...
 INSTALL_REQUIRES = []  # Necesario si no hay un requirements.txt
 
 ######## FIN DE LA CONFIGURACIÓN DEL PAQUTE ########
@@ -331,6 +332,9 @@ class SystemInstallCommand(install):
         print('Starting Python module installation.')
         self.do_egg_install()
         print('-' * 80)
+        if getpass.getuser() != 'root':
+            print('WARNING: Simple-Monitor-Alert installed as "{}". Install as root to create the system files!')
+            return
         print('Installing things that are not Python (system files).')
         for directory in [ENABLED_MONITORS_DIR, os.path.dirname(AVAILABLE_MONITORS_DIR)]:
             print('Creating directory {}'.format(directory))
