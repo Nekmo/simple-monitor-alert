@@ -55,7 +55,7 @@ class FakeConfig(Config):
             super().__init__('/Fake-Config-File')
         else:
             # Old Style Class
-            Config.__init__('/Fake-Config-File')
+            Config.__init__(self, '/Fake-Config-File')
         self._data = data
 
     def items(self, section=None, **kwargs):

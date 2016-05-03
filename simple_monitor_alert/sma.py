@@ -67,7 +67,7 @@ class Config(ConfigParser):
             super().__init__()
         else:
             # Old Style Class
-            ConfigParser.__init__()
+            ConfigParser.__init__(self)
         self.read(self.file)
 
     def get_monitor_observables(self, name):

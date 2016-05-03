@@ -58,6 +58,12 @@ def execute_from_command_line(argv=None):
     parse_service = parser.sub.add_parser('service', help='Run SMA as service (daemon).')
     parse_service.set_defaults(which='service')
 
+    parse_alerts = parser.sub.add_parser('alerts', help='Alerts options.')
+    parse_alerts.set_defaults(which='alerts')
+    parse_alerts.add_argument('--test', help = 'Test alert', action='store_true')
+    parse_alerts.add_argument('alert_section', nargs='?', help='Alert section to see')
+
+
     args = parser.parse_args(argv[1:])
 
     create_logger('sma', args.loglevel)
@@ -71,3 +77,6 @@ def execute_from_command_line(argv=None):
     elif args.which == 'service':
         sma = SMAService(args.monitors_dir, args.alerts_dir, args.config)
         sma.start()
+    elif args.which == 'alerts' and args.test:
+        sma = SMA(args.monitors_dir, args.alerts_dir, args.config)
+        sma.alerts.test()

@@ -120,6 +120,10 @@ class Alerts(list):
             if success:
                 self.sma.results.add_alert_to_observable_result(observable, alert.section)
 
+    def test(self, section=None):
+        for alert in self:
+            alert.send('Title', 'Body message')
+
     def clear(self):
         if sys.version_info >= (3, 3):
             super().clear()

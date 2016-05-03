@@ -45,7 +45,7 @@ Extra Quick Guide in 3 steps
 
 2. Edit `/etc/simple-monitor-alert/sma.ini` and defines the recipient of the alerts::
 
-    [email]
+    [mail]
     to = awesome@email.com
 
 3. Execute sma::
