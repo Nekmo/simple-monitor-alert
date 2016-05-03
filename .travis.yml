@@ -1,0 +1,20 @@
+language: python
+python:
+- 3.5
+- 3.4
+- 3.3
+- 3.2
+- 2.7
+
+before_install:
+- pip install codecov tox>=1.8 virtualenv==13.1.2
+install:
+- if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then export PYVER=py27; fi
+- if [[ $TRAVIS_PYTHON_VERSION == '3.3' ]]; then export PYVER=py33; fi
+- if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then export PYVER=py32; fi
+- if [[ $TRAVIS_PYTHON_VERSION == '3.4' ]]; then export PYVER=py34; fi
+- if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then export PYVER=py35; fi
+- if [[ $TRAVIS_PYTHON_VERSION != '3.2' ]]; then export COMMAND='coverage run'; fi
+script: COMMAND="${COMMAND:-python}" tox -e$PYVER
+after_success:
+- codecov
