@@ -63,7 +63,11 @@ def get_var_directory():
 class Config(ConfigParser):
     def __init__(self, file):
         self.file = file
-        super(Config, self).__init__()
+        if sys.version_info >= (3, 0):
+            super().__init__()
+        else:
+            # Old Style Class
+            ConfigParser.__init__()
         self.read(self.file)
 
     def get_monitor_observables(self, name):

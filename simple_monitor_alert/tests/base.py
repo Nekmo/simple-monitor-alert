@@ -1,3 +1,5 @@
+import sys
+
 from simple_monitor_alert.alerts import Alerts
 from simple_monitor_alert.lines import Observable, ItemLine
 from simple_monitor_alert.sma import JSONFile, ObservableResults, Config
@@ -49,7 +51,11 @@ class FakeAlert(object):
 
 class FakeConfig(Config):
     def __init__(self, data):
-        super(FakeConfig, self).__init__('/Fake-Config-File')
+        if sys.version_info >= (3, 0):
+            super().__init__('/Fake-Config-File')
+        else:
+            # Old Style Class
+            Config.__init__('/Fake-Config-File')
         self._data = data
 
     def items(self, section=None, **kwargs):
