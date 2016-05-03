@@ -15,6 +15,7 @@ install:
 - if [[ $TRAVIS_PYTHON_VERSION == '3.4' ]]; then export PYVER=py34; fi
 - if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then export PYVER=py35; fi
 - if [[ $TRAVIS_PYTHON_VERSION != '3.2' ]]; then export COMMAND='coverage run'; fi
+- pip install -r requirements.txt
 script: COMMAND="${COMMAND:-python}" tox -e$PYVER
 after_success:
 - codecov
