@@ -1,5 +1,6 @@
 import datetime
 import os
+import sys
 import time
 import logging
 
@@ -92,6 +93,12 @@ class JSONFile(dict):
 
     def write(self):
         json.dump(self, open(self.path, 'w'), sort_keys=True, indent=4, separators=(',', ': '))
+
+    def clear(self):
+        if sys.version_info >= (3, 3):
+            super().clear()
+        else:
+            self[:] = []
 
 
 class ObservableResults(JSONFile):

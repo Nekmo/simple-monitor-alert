@@ -6,21 +6,21 @@ Las alertas permiten comunicar cuando ocurre un error con un observable por un m
 a unas condiciones. Por defecto, cuando sucede un error, se envía a todas las configuraciones de alerta. Un
 ejemplo puede ser el siguiente::
 
-    [email]
+    [mail]
     to = alerts@company.com
 
-El nombre de la sección, "email", corresponde al nombre del script de alerta. No obstante, es posible definir dicho
+El nombre de la sección, "mail", corresponde al nombre del script de alerta. No obstante, es posible definir dicho
 nombre de forma manual::
 
     [company-alert]
-    alert = email
+    alert = mail
     to = alerts@company.com
 
 Todo el contexto de la sección se le pasará al script que se ejecute con la alerta. Así pues, algunas configuraciones
 podrán requerir opciones, o podrán darse optativamente::
 
     [company-alert]
-    alert = email
+    alert = mail
     host = smtp.company.com
     port = 25
     username = noreply
@@ -34,8 +34,8 @@ Utilizando una alerta base
 Es posible reutilizar la configuración de una alerta existente para sobrescribirla y crear una nueva alerta.
 Por ejemplo::
 
-    [email-smtp2]
-    base = company-email
+    [mail-smtp2]
+    base = company-alert
     host = smtp2.company.com
 
 No obstante, con lo anterior estamos haciendo que la alerta se envíe 2 veces: una por el medio de de la alerta base,
@@ -52,8 +52,8 @@ Esto es sobre todo útil si queremos asegurarnos de recibir la alerta bien porqu
 está funcionando bien, o no lo hemos leído. Esta alerta se envía sólo si el error se sigue produciendo tras el tiempo
 marcado::
 
-    [email-smtp2]
-    base = email
+    [mail-smtp2]
+    base = mail
     host = smtp2.company.com
     since = 12h
 
@@ -61,8 +61,8 @@ Delimitar por monitores y observables
 =====================================
 Hay ciertas que sólo queremos que reciban ciertas personas. Para ello filtraremos monitor o/y observable::
 
-    [email-webmaster]
-    base = email
+    [mail-webmaster]
+    base = mail
     filter = http_monitor,services_monitor:running(nginx)
     to = webmaster@company.com
 
@@ -75,7 +75,7 @@ Este caso es un poco más complejo. Podríamos querer delimitar por monitores y 
 pero no queremos que nadie reciba todas las alertas, reutilizando la configuración de base. Para ello, desactivaremos
 la alerta de base y de ella extenderemos las demás, pero activadas::
 
-    [email]
+    [mail]
     host = smtp.company.com
     port = 25
     username = noreply
@@ -83,20 +83,20 @@ la alerta de base y de ella extenderemos las demás, pero activadas::
     from = noreply@company.com
     enabled = false
 
-    [email-webmaster]
-    base = email
+    [mail-webmaster]
+    base = mail
     filter = http_monitor,services_monitor:running(nginx)
     to = webmaster@company.com
     enabled = true
 
-    [email-sysadmin]
-    base = email
+    [mail-sysadmin]
+    base = mail
     filter = cpu,memory,hdd,services_monitor
     to = sysadmin@company.com
     enabled = true
 
-    [email-junior]
-    base = email
+    [mail-junior]
+    base = mail
     filter = coffee_pot
     to = junior@company.com
     enabled = true
@@ -109,8 +109,8 @@ Alerta cuando un problema se soluciona
 Por defecto, todas las alertas se envían únicamente cuando fallan. No obstante, es posible crear alertas que
 se envíen cuando un problema se soluciona::
 
-    [email-resolved]
-    base = email
+    [mail-resolved]
+    base = mail
     resolved = true
 
 Eso sí, es necesario avisar, y esto es muy importante, que la configuración se alerta sólo es aplicable cuando

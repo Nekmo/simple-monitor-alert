@@ -119,3 +119,9 @@ class Alerts(list):
             success = alert.send(communication['subject'], communication['message'], **communication.alert_kwargs())
             if success:
                 self.sma.results.add_alert_to_observable_result(observable, alert.section)
+
+    def clear(self):
+        if sys.version_info >= (3, 3):
+            super().clear()
+        else:
+            self[:] = []
