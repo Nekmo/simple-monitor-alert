@@ -41,3 +41,10 @@ Usa Nagios/Zabbix.
 La parte de "simple" de Simple-Monitor-Alert no es de pega. SMA es simple. Sencillo pero versátil. Si hay una
 característica que de verdad sea útil y no lo haga más complejo, se implementará. Si no, no.
 
+¿Cómo de escalable es SMA?
+==========================
+Simple Monitor Alert es escalable en un 1000% desde el mismo momento en que no requiere de ningún servidor para
+funcionar, corriendo de forma independiente en cada máquina. Así pues, el único punto débil se encuentra en tu servidor
+de correo al recibir las notificaciones.
+
+Si quieres hacer despliegues en cientos de servidores, recomendamos mirar una solución como **Ansible**.

@@ -154,7 +154,5 @@ un tiempo mínimo para volver a ejecutarlo:
 
     #!/usr/bin/env bash
     echo "X-Run-Every-Seconds: 600"
-    echo "cpu_pcnt.name = 'CPU percentage usage'"
-    echo "cpu_pcnt.expected= <= 80"
-    echo "cpu_pcnt.seconds = 600"
-    echo "cpu_pcnt.value = "`grep 'cpu ' /proc/stat | awk '{ print ($2+$4)*100/($2+$4+$5)}'`
+    echo "observable.name = 'My observable name'"
+    ...

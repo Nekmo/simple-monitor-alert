@@ -27,14 +27,22 @@ Simple Monitor Alert
 ####################
 A simple monitor with alerts for Unix/Linux under the KISS philosophy. Keep It Simple, Stupid!
 
-- Light: Only ~7MiB of RAM. (That's great for your raspberry pi!)
-- Very easy to use and understand.
-- Write your own monitors in any language (Bash, Python, Perl, JS, Ruby, PHP, C, C++...).
-- Awesome features: send alerts once or several times, graphic peak...
-- No server required. You can run as a daemon or using crond.
-- Easy to debug and test.
-- Multiple ways to send alerts: email, telegram...
-- Easy configuration in a single file.
+- **Light**: Only ~7MiB of RAM. (That's great for your raspberry pi!)
+- Very **easy** to use and understand.
+- Write **your own monitors** in any language (Bash, Python, Perl, JS, Ruby, PHP, C, C++...).
+- **Awesome features**: send alerts once or several times, graphic peak...
+- No server required. You can run as a **daemon or using crond**.
+- Easy to **debug** and test.
+- Multiple ways to send alerts: **email, telegram**...
+- **Easy configuration** in a single file.
+
+Available monitors:
+
+- **Hard disks**: SMART, [temperature], free space, Mdadm (linux RAID).
+- **System**: CPU usage, free RAM, free SWAP, monitorize services (daemons), [sensors]...
+- **Network**: ping, port.
+- **Others**: [Log monitor]
+
 
 3-Step Quick Start Guide
 ========================
