@@ -5,6 +5,7 @@ import logging
 from collections import defaultdict
 
 import six
+import sys
 
 from simple_monitor_alert.exceptions import InvalidScriptLineError, InvalidScriptLineLogging
 from simple_monitor_alert.lines import Observable, RawLine, RawItemLine, get_observables_from_lines
@@ -53,7 +54,17 @@ class Monitor(object):
             env = env.copy()
             env.update(parameters)
         popen = subprocess.Popen([self.script_path], stdout=subprocess.PIPE, env=env)
-        popen.wait(TIMEOUT)
+        if sys.version_info >= (3, 3):
+            popen.wait(TIMEOUT)
+        else:
+            def terminate_popen():
+                popen.terminate()
+                popen.kill()
+            from threading import Timer
+            l = Timer(TIMEOUT, terminate_popen)
+            l.start()
+            popen.wait()
+            l.cancel()
         lines = self.parse_lines(popen.stdout.readlines())
         self.lines = list(lines)
         self.items = self.get_observables(self.lines, parameters)
