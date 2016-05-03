@@ -59,13 +59,6 @@ def get_var_directory():
     raise OSError('{} is not writable by {} user'.format(var_directory, getpass.getuser()))
 
 
-# noinspection PyTypeChecker
-results_file = create_file(os.path.join(get_var_directory(), 'results.json'), {
-    'version': __version__,
-    'monitors': {},
-})
-
-
 class Config(ConfigParser):
     def __init__(self, file):
         self.file = file
@@ -137,6 +130,11 @@ class ObservableResults(JSONFile):
 
 class SMA(object):
     def __init__(self, monitors_dir=None, alerts_dir=None, config_file=None):
+        # noinspection PyTypeChecker
+        results_file = create_file(os.path.join(get_var_directory(), 'results.json'), {
+            'version': __version__,
+            'monitors': {},
+        })
         self.config = Config(config_file)
         self.results = ObservableResults(results_file)
         self.monitors = Monitors(monitors_dir, self.config)
