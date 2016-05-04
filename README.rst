@@ -1,4 +1,4 @@
-.. image:: https://img.shields.io/travis/Nekmo/simple-monitor-alert.svg?style=flat-square&maxAge=2592000
+.. image:: https://img.shields.io/travis/Nekmo/simple-monitor-alert.svg?style=flat-square
   :target: https://travis-ci.org/Nekmo/simple-monitor-alert
   :alt: Latest Travis CI build status
 
