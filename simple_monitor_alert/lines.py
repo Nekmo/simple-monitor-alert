@@ -270,6 +270,15 @@ class KeyValueLine(object):
     def __init__(self, key, value):
         self.key, self.value = key, value
 
+    def __str__(self):
+        raise NotImplementedError
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __eq__(self, other):
+        return self.key == other.key and self.value == other.value
+
 
 class ItemLine(KeyValueLine):
     def __init__(self, key, value):
@@ -278,11 +287,13 @@ class ItemLine(KeyValueLine):
     def __str__(self):
         return '{} = {}'.format(self.key, self.value)
 
-    def __repr__(self):
-        return self.__str__()
 
-    def __eq__(self, other):
-        return self.key == other.key and self.value == other.value
+class HeaderLine(KeyValueLine):
+    def __init__(self, key, value):
+        super(HeaderLine, self).__init__(key, value)
+
+    def __str__(self):
+        return '{}: {}'.format(self.key, self.value)
 
 
 class RawLine(object):
@@ -303,7 +314,7 @@ class RawLine(object):
         line = line.strip(string.whitespace)
         if not line or line.startswith('#'):
             return
-        for line_type_class in [RawItemLine]:
+        for line_type_class in [RawItemLine, RawHeaderLine]:
             try:
                 return line_type_class(line, monitor)
             except InvalidScriptLineError:
@@ -315,6 +326,12 @@ class RawItemLine(RawLine, ItemLine):
     key = ''
     value = ''
     pattern = re.compile('(?P<key>[A-z0-9.()_]+) ?= ?(?P<value>.*)')
+
+
+class RawHeaderLine(RawLine, HeaderLine):
+    key = ''
+    value = ''
+    pattern = re.compile('(?P<key>[A-z0-9.()_\-]+) ?\: ?(?P<value>.*)')
 
 
 class RawHeader(RawLine):

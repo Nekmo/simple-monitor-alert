@@ -1,14 +1,18 @@
+import datetime
 import os
 import subprocess
 import warnings
 import logging
 from collections import defaultdict
 
+import dateutil
 import six
 import sys
 
+from dateutil.tz import tzlocal
+
 from simple_monitor_alert.exceptions import InvalidScriptLineError, InvalidScriptLineLogging
-from simple_monitor_alert.lines import Observable, RawLine, RawItemLine, get_observables_from_lines
+from simple_monitor_alert.lines import Observable, RawLine, RawItemLine, get_observables_from_lines, RawHeaderLine
 
 logger = logging.getLogger('sma')
 
@@ -25,7 +29,7 @@ def get_verbose_condition(observable):
     return '{} {}'.format(value, expected)
 
 
-def log_evaluate(observable, result=None):
+def log_evaluate(observable, result=None, use_logger=True):
     result = result or observable.evaluate()
     level = 'success' if result else observable.get_line_value('level') or 'warning'
     msg = 'Trigger: [{}] ({}) {}. '.format(level, getattr(getattr(observable, 'monitor', None), 'name', '?'),
@@ -36,7 +40,10 @@ def log_evaluate(observable, result=None):
     extra_info = observable.get_line_value('extra_info')
     if extra_info:
         msg += '. Extra info: {}'.format(extra_info)
-    getattr(logger, 'info' if result else 'warning')(msg)
+    if use_logger:
+        getattr(logger, 'info' if result else 'warning')(msg)
+    else:
+        return msg
 
 
 class Monitor(object):
@@ -44,8 +51,9 @@ class Monitor(object):
     headers = None
     items = None
 
-    def __init__(self, script_path):
+    def __init__(self, script_path, sma=None):
         self.script_path = script_path
+        self.sma = sma
         self.name = os.path.splitext(os.path.split(script_path)[1])[0]
 
     def execute(self, parameters=None):
@@ -72,11 +80,6 @@ class Monitor(object):
         # self.evaluate_items()
         return self.items.values()
 
-    def evaluate_items(self, items_list=None):
-        items = items_list or self.items.values()
-        for item in items:
-            log_evaluate(item)
-
     def parse_lines(self, lines, on_error=InvalidScriptLineLogging):
         for i, line in enumerate(lines):
             try:
@@ -89,6 +92,31 @@ class Monitor(object):
                 else:
                     on_error(line, self.script_path)
 
+    def save_headers(self):
+        self.sma.monitors_info.set_headers(self, self.headers)
+        self.sma.monitors_info.write()
+
+    def get_header(self, header_key):
+        return (self.sma.monitors_info.get_monitor(self, create=False) or {}).get('headers', {}).get(header_key)
+
+    def save_last_execution(self):
+        self.sma.monitors_info.set_last_execution(self)
+        self.sma.monitors_info.write()
+
+    def last_execution(self):
+        data = self.sma.monitors_info.get_monitor(self, create=False) or {}
+        last_execution = data.get('last_execution', None)
+        if last_execution:
+            return dateutil.parser.parse(last_execution).replace(tzinfo=tzlocal())
+
+    def shoud_be_executed(self):
+        last_execution = self.last_execution()
+        run_every = self.get_header('X-Run-Every-Seconds')
+        if not last_execution or not run_every:
+            return True
+        dt = datetime.datetime.now(dateutil.tz.tzlocal())
+        return dt - last_execution >= datetime.timedelta(seconds=run_every)
+
     @staticmethod
     def get_observables(lines, params=None):
         return get_observables_from_lines(lines, params)
@@ -96,7 +124,7 @@ class Monitor(object):
     @staticmethod
     def get_headers(lines):
         headers = {}
-        for line in filter(lambda x: isinstance(x, RawItemLine), lines):
+        for line in filter(lambda x: isinstance(x, RawHeaderLine), lines):
             headers[line.key] = line.value
         return headers
 
@@ -104,8 +132,9 @@ class Monitor(object):
 class Monitors(object):
     monitors = None
 
-    def __init__(self, monitors_dir=None, config=None):
+    def __init__(self, monitors_dir=None, config=None, sma=None):
         self.monitors_dir, self.config = monitors_dir, config
+        self.sma = sma
 
     def get_monitors(self, monitors_dir=None):
         if self.monitors:
@@ -115,9 +144,8 @@ class Monitors(object):
                          for file in os.listdir(monitors_dir)]
         return self.monitors
 
-    @staticmethod
-    def get_monitor(script_path):
-        return Monitor(script_path)
+    def get_monitor(self, script_path):
+        return Monitor(script_path, self.sma)
 
     def get_monitor_params(self, monitor):
         observables = self.config.get_monitor_observables(monitor.name)
@@ -149,6 +177,8 @@ class Monitors(object):
         try:
             for params in self.get_parameters_cycles(parameters):
                 observables.extend(monitor.execute(params))
+            monitor.save_headers()
+            monitor.save_last_execution()
         except PermissionError:
             warnings.warn_explicit('No permissions for monitor. Check execution perms and read perms.',
                                    UserWarning, monitor.script_path, 1)
@@ -161,6 +191,8 @@ class Monitors(object):
 
     def execute_all(self, use_config=True):
         for monitor in self.get_monitors():
+            if not monitor.shoud_be_executed():
+                continue
             observables = self.execute(monitor)
             if use_config:
                 self.update_observables(monitor, observables)

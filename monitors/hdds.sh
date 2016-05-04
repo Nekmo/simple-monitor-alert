@@ -3,6 +3,7 @@
 # Check the free space on partitions.
 # No parameters required.
 
+echo "X-Run-Every-Seconds: 300"
 
 IFS=$'\n'
 for part_data in `df -h`; do

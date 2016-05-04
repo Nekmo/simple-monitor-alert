@@ -18,6 +18,10 @@ class TestMonitor(unittest.TestCase):
         self.assertIn((item.name, None), monitor.items.keys())
         self.assertEqual(item, monitor.items[(item.name, None)])
 
+    def test_get_header(self):
+        monitor = Monitor(os.path.join(DIR_PATH, 'assets', 'run-every.py'))
+        monitor.execute()
+
 
 if __name__ == '__main__':
     unittest.main()

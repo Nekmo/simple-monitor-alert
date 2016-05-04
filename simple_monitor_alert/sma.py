@@ -86,8 +86,10 @@ class Config(ConfigParser):
 
 
 class JSONFile(dict):
-    def __init__(self, path, **kwargs):
-        super(JSONFile, self).__init__(**kwargs)
+    def __init__(self, path, create=True):
+        super(JSONFile, self).__init__()
+        if create:
+            create_file(path, '{}')
         self.path = path
         self.read()
 
@@ -139,6 +141,23 @@ class ObservableResults(JSONFile):
         return False
 
 
+class MonitorsInfo(JSONFile):
+    def get_monitor(self, monitor, create=True):
+        if monitor.name not in self and create:
+            self[monitor.name] = {'headers': {}, 'last_execution': None}
+        return self.get(monitor.name)
+
+    def set_headers(self, monitor, headers):
+        for key, value in headers.items():
+            if value.isdigit():
+                value = int(value)
+            headers[key] = value
+        self.get_monitor(monitor)['headers'] = headers
+
+    def set_last_execution(self, monitor):
+        self.get_monitor(monitor)['last_execution'] = datetime.datetime.now(dateutil.tz.tzlocal()).isoformat()
+
+
 class SMA(object):
     def __init__(self, monitors_dir=None, alerts_dir=None, config_file=None):
         # noinspection PyTypeChecker
@@ -148,7 +167,8 @@ class SMA(object):
         })
         self.config = Config(config_file)
         self.results = ObservableResults(results_file)
-        self.monitors = Monitors(monitors_dir, self.config)
+        self.monitors_info = MonitorsInfo(os.path.join(get_var_directory(), 'monitors.json'))
+        self.monitors = Monitors(monitors_dir, self.config, self)
         self.alerts = Alerts(self, alerts_dir)
 
     def evaluate_and_alert(self):

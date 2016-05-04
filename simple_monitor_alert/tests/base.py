@@ -6,8 +6,8 @@ from simple_monitor_alert.sma import JSONFile, ObservableResults, Config
 
 
 class FakeJSONFile(JSONFile):
-    def __init__(self, data, **kwargs):
-        super(FakeJSONFile, self).__init__('/Fake-JSON-File', **kwargs)
+    def __init__(self, data):
+        super(FakeJSONFile, self).__init__('/Fake-JSON-File', create=False)
         self.update(data)
 
     def read(self):

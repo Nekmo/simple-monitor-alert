@@ -70,7 +70,7 @@ class Telegram(AlertBase):
         return name
 
     def send(self, subject, message, observable_name='', name='', extra_info=None, level='warning', fail=True,
-             condition=''):
+             condition='', observable=None):
         to = self.search_uid(self.config['to'])
         icon = LEVELS.get(level)
         condition_status = 'Failed' if fail else 'Successful'
