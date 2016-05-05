@@ -38,7 +38,7 @@ DEFAULT_ENABLEDS_MONITORS = ['hdds.sh', 'system.sh']
 USERNAME = 'sma'
 VAR_DIRECTORY = '/var/lib/simple-monitor-alert'
 
-SERVICES = [('daemons/sma.service', '/usr/lib/systemd/system/sma.service')]
+SERVICES = [('services/sma.service', '/usr/lib/systemd/system/sma.service')]
 
 #  Información del autor
 from setuptools.command.install import install
@@ -364,10 +364,10 @@ class SystemInstallCommand(install):
         os.chown(VAR_DIRECTORY, uid, gid)
         print('Copying services')
         for src, dest in SERVICES:
-            if filecmp.cmp(src, dest):
+            if filecmp.cmp(os.path.join(dir_path, src), dest):
                 continue
             create_backup(dest)
-            shutil.copy(src, dest)
+            shutil.copy(os.path.join(dir_path, src), dest)
         print('Copying sma template file')
         if not os.path.lexists(SMA_FILE):
             shutil.copy(os.path.join(dir_path, SMA_TEMPLATE_FILENAME), SMA_FILE)
