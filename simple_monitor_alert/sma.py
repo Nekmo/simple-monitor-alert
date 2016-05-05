@@ -36,7 +36,7 @@ def validate_write_dir(directory, log=lambda x: x):
     except OSError:
         log('No write permissions to the directory {}.'.format(directory))
         return False
-    return False
+    return True
 
 
 def create_file(path, content=''):
