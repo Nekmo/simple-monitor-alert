@@ -364,7 +364,7 @@ class SystemInstallCommand(install):
         os.chown(VAR_DIRECTORY, uid, gid)
         print('Copying services')
         for src, dest in SERVICES:
-            if filecmp.cmp(os.path.join(dir_path, src), dest):
+            if os.path.exists(dest) and filecmp.cmp(os.path.join(dir_path, src), dest):
                 continue
             create_backup(dest)
             shutil.copy(os.path.join(dir_path, src), dest)
