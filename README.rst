@@ -38,10 +38,11 @@ A simple monitor with alerts for Unix/Linux under the KISS philosophy. Keep It S
 
 Available monitors:
 
-- **Hard disks**: SMART, [temperature], free space, Mdadm (linux RAID).
-- **System**: CPU usage, free RAM, free SWAP, monitorize services (daemons), [sensors]...
-- **Network**: ping, port.
-- **Others**: [Log monitor]
+- **Hard disks**: SMART, temperature, free space, Mdadm (linux RAID).
+- **System**: CPU usage, free RAM, free SWAP, monitorize services (daemons), sensors, [time]...
+- **Web**: load time, return code, content in page.
+- **Network**: [ping, port, dynamic ip].
+- **Others**: [Log monitor, google cloud print]
 
 
 3-Step Quick Start Guide
