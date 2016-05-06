@@ -325,7 +325,7 @@ class RawLine(object):
 class RawItemLine(RawLine, ItemLine):
     key = ''
     value = ''
-    pattern = re.compile('(?P<key>[A-z0-9.()_]+) ?= ?(?P<value>.*)')
+    pattern = re.compile('(?P<key>[A-z0-9.()_\-]+) ?= ?(?P<value>.*)')
 
 
 class RawHeaderLine(RawLine, HeaderLine):
