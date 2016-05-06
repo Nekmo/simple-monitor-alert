@@ -72,15 +72,22 @@ class Telegram(AlertBase):
     def send(self, subject, message, observable_name='', name='', extra_info=None, level='warning', fail=True,
              condition='', observable=None):
         to = self.search_uid(self.config['to'])
-        icon = LEVELS.get(level)
-        condition_status = 'Failed' if fail else 'Successful'
-        level = level.upper()
-        scope = locals()
-        message = DEFAULT_MESSAGE.format(**{key: (escape(value) if isinstance(value, six.string_types) else value)
-                                            for key, value in scope.items()})
-        message = message.encode('utf-8')
-        message = message % {b'icon': icon}
+        if observable_name:
+            icon = LEVELS.get(level)
+            condition_status = 'Failed' if fail else 'Successful'
+            level = level.upper()
+            scope = locals()
+            message = DEFAULT_MESSAGE.format(**{key: (escape(value) if isinstance(value, six.string_types) else value)
+                                                for key, value in scope.items()})
+            message = message.encode('utf-8')
+            message = message % {b'icon': icon}
+        else:
+            message = '<b>{subject}</b>\n{message}'.format(subject=escape(subject), message=escape(message))
+            message = message.encode('utf-8')
         self.bot.send_message(chat_id=to, text=message, parse_mode='HTML')
         return True
 
 Alert = Telegram
+
+if __name__ == '__main__':
+    Alert(os.environ).send(sys.argv[1], sys.argv[2])
