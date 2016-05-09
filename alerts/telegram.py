@@ -83,7 +83,7 @@ class Telegram(AlertBase):
             message = message % {b'icon': icon}
         else:
             message = '<b>{subject}</b>\n{message}'.format(subject=escape(subject), message=escape(message))
-            message = message.encode('utf-8')
+            message = message.encode('utf-8', 'ignore')
         self.bot.send_message(chat_id=to, text=message, parse_mode='HTML')
         return True
 
