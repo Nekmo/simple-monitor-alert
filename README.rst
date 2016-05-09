@@ -41,7 +41,7 @@ Available monitors:
 - **Hard disks**: SMART, temperature, free space, Mdadm (linux RAID).
 - **System**: CPU usage, free RAM, free SWAP, monitorize services (daemons), sensors, [time]...
 - **Web**: load time, return code, content in page.
-- **Network**: [ping, port, dynamic ip].
+- **Network**: ping, [port, dynamic ip].
 - **Others**: [Log monitor, google cloud print]
 
 
