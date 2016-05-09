@@ -22,7 +22,7 @@ Observable: {observable_name}
 """
 
 class AlertBase(object):
-    def __init__(self, config, section):
+    def __init__(self, config, section=None):
         self.config = config
         self.section = section
         self.init()
