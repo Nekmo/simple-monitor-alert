@@ -30,9 +30,11 @@ def get_verbose_condition(observable):
 
 
 def log_evaluate(observable, result=None, use_logger=True):
+    from simple_monitor_alert.sma import get_hostname
     result = result or observable.evaluate()
     level = 'success' if result else observable.get_line_value('level') or 'warning'
-    msg = 'Trigger: [{}] ({}) {}. '.format(level, getattr(getattr(observable, 'monitor', None), 'name', '?'),
+    msg = '{} - - Trigger: [{}] ({}) {}. '.format(get_hostname(), level,
+                                                  getattr(getattr(observable, 'monitor', None), 'name', '?'),
                                            observable.get_verbose_name_group())
     msg += ('Result: {}' if result else 'Assertion {} failed').format(get_verbose_condition(observable))
     if observable.param_used:

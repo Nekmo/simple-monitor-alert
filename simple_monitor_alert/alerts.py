@@ -14,7 +14,7 @@ logger = logging.getLogger('sma')
 
 
 DEFAULT_MESSAGE = """\
-{name}
+{hostname}: {name}
 {extra_info}
 
 Observable: {observable_name}
@@ -36,15 +36,19 @@ class AlertCommand(AlertBase):
 
 
 class ObservableCommunication(dict):
-    alert_kwargs_keys = ('observable_name', 'name', 'extra_info', 'level', 'fail', 'condition', 'observable')
+    alert_kwargs_keys = ('observable_name', 'name', 'extra_info', 'level', 'fail', 'condition', 'hostname',
+                         'observable')
 
     def __init__(self, observable, fail, **kwargs):
         super(ObservableCommunication, self).__init__(**kwargs)
         self.observable = observable
+        from simple_monitor_alert.sma import get_hostname
         self['observable'] = observable
         self['fail'] = fail
+        self['hostname'] = get_hostname()
         self['level'] = self.observable.get_line_value('level', 'warning')
-        self['subject'] = '[{}] {}'.format('ERROR' if fail else 'SOLVED', observable.get_verbose_name())
+        self['subject'] = '{} [{}] {}'.format(self['hostname'], 'ERROR' if fail else 'SOLVED',
+                                              observable.get_verbose_name())
         self['name'] = observable.get_verbose_name()
         self['observable_name'] = observable.name
         self['extra_info'] = observable.get_line_value('extra_info') or '(No more info available)'

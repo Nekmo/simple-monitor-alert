@@ -5,7 +5,6 @@
 import argparse
 import logging
 
-from simple_monitor_alert.monitor import Monitors
 from simple_monitor_alert.sma import SMA, SMAService
 
 SMA_INI_FILE = '/etc/simple-monitor-alert/sma.ini'
@@ -54,7 +53,7 @@ def execute_from_command_line(argv=None):
                         const=5, default=logging.INFO)
 
     parser.sub = parser.add_subparsers()
-    # Subcommand Create bot
+
     parse_service = parser.sub.add_parser('service', help='Run SMA as service (daemon).')
     parse_service.set_defaults(which='service')
 
@@ -67,9 +66,6 @@ def execute_from_command_line(argv=None):
     args = parser.parse_args(argv[1:])
 
     create_logger('sma', args.loglevel)
-    # create console handler and set level to debug
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
 
     if not getattr(args, 'which', None):
         sma = SMA(args.monitors_dir, args.alerts_dir, args.config)

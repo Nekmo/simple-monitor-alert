@@ -68,8 +68,7 @@ CLASSIFIERS = [
 ]  # https://pypi.python.org/pypi?%3Aaction=list_classifiers
 NATURAL_LANGUAGE = 'English'  # English...
 DESCRIPTION = """\
-A comment system for Django CMS unintrusive and easy to use.
-Add it to your pages without modifying your models. It is highly customizable!
+A simple monitor with alerts for Unix/Linux under the KISS philosophy. Keep It Simple, Stupid!
 """
 
 # Requerido para la correcta instalación del paquete

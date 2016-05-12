@@ -9,6 +9,7 @@ import json
 import dateutil
 import dateutil.tz
 import six
+import socket
 
 from simple_monitor_alert import __version__
 from simple_monitor_alert.alerts import Alerts
@@ -23,6 +24,10 @@ else:
 WAIT_SECONDS = 60
 DEFAULT_VAR_DIRECTORY = os.environ.get('VAR_DIRECTORY', '/var/lib/simple-monitor-alert')
 logger = logging.getLogger('sma')
+
+
+def get_hostname():
+    return socket.gethostname()
 
 
 def validate_write_dir(directory, log=lambda x: x):

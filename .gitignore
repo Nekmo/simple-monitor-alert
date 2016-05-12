@@ -92,3 +92,4 @@ ENV/
 
 .idea
 /sma.ini
+/storage.json
