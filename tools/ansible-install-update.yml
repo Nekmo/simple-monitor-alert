@@ -1,0 +1,10 @@
+
+---
+
+- hosts: '{{ target }}'
+  tasks:
+    - name: Install or update Simple Monitor Alert
+      pip: state=latest name='git+https://github.com/Nekmo/simple-monitor-alert.git@{{ branch|default("master")
+           }}#egg=simple-monitor-alert' editable=no
+      become: yes
+      become_method: sudo
