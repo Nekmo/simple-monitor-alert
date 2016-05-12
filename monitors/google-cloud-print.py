@@ -4,6 +4,7 @@ import os
 import sys
 import webbrowser
 import json
+from json.decoder import JSONDecodeError
 
 import requests
 import time
@@ -11,6 +12,7 @@ import time
 from simple_monitor_alert.sma import get_var_directory
 
 GRANT_TYPE = 'http://oauth.net/grant_type/device/1.0'
+GRANT_TYPE_REFRESH = 'refresh_token'
 SCOPE = 'https://www.googleapis.com/auth/cloudprint'
 REGISTER_NEW_PROJECT_URL = 'https://console.developers.google.com/iam-admin/projects'
 OAUTH_DEVICE_CODE_URL = 'https://accounts.google.com/o/oauth2/device/code'
@@ -31,6 +33,16 @@ class Auth(requests.auth.AuthBase):
             print('You need execute "register". Look at the instructions.')
             raise SystemExit
         self.data = json.load(open(self.file))
+
+    def renew(self):
+        r = requests.post(OAUTH_TOKEN_URL, {'client_secret': self.data['client_secret'],
+                                            'client_id': self.data['client_id'], 'grant_type': GRANT_TYPE_REFRESH,
+                                            'refresh_token': self.data['refresh_token']})
+        self.data.update(r.json())
+        self.save()
+
+    def save(self):
+        json.dump(self.data, open(self.file, 'w'))
 
     def __call__(self, r):
         r.headers['Authorization'] = '{token_type} {access_token}'.format(**self.data)
@@ -77,7 +89,15 @@ def register():
 
 def get_prints(auth=None):
     auth = auth or Auth()
-    r = requests.get(SEARCH_PRINTS, auth=auth)
+    r = None
+    for i in range(2):
+        r = requests.get(SEARCH_PRINTS, auth=auth)
+        if r.status_code == 403 and i == 1:
+            raise SystemExit('Renew token failed.')
+        elif r.status_code == 403:
+            auth.renew()
+        else:
+            break
     data = r.json()
     for printer in data['printers']:
         if printer['name'] in ['Save to Google Docs']:
