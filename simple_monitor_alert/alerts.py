@@ -73,14 +73,15 @@ class Alerts(list):
         for section in self.config.sections():
             if self.config.has_option(section, 'alert'):
                 alert = self.config.get(section, 'alert')
-                if not alert in self.valid_alerts:
+                if alert not in self.valid_alerts:
                     logger.warning('Invalid alert value {} for section {} in {}'.format(alert, section,
                                                                                         self.config.file))
+                    continue
             elif section in self.valid_alerts:
                 alert = section
             else:
                 continue
-            yield alert, dict(self.config.items(alert)), section
+            yield alert, dict(self.config.items(section)), section
 
     def _import_python_alert(self, alert, config, section):
         if not self.valid_alerts[alert].endswith('.py'):
