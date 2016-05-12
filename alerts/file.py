@@ -18,7 +18,7 @@ class File(AlertBase):
         self.path = self.config.get('path')
 
     def send(self, subject, message, observable=None, result=None, **kwargs):
-        line = log_evaluate(observable, not result, False)
+        line = log_evaluate(observable, result, False)
         with open(self.path, 'a') as f:
             f.write('{}\n'.format(line))
         return True
