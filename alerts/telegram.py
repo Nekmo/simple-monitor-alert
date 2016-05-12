@@ -23,7 +23,7 @@ from simple_monitor_alert.alerts import AlertBase
 
 SUPPORT_ALERT_IMPORT = True
 DEFAULT_MESSAGE = """\
-%(icon)b [{level}] Simple-Monitor-Alert
+%(icon)b {hostname} [{level}] Simple-Monitor-Alert
  <strong>{name}</strong>
 {extra_info}
 
@@ -70,7 +70,7 @@ class Telegram(AlertBase):
         return name
 
     def send(self, subject, message, observable_name='', name='', extra_info=None, level='warning', fail=True,
-             condition='', observable=None):
+             condition='', hostname=None, observable=None):
         to = self.search_uid(self.config['to'])
         if observable_name:
             icon = LEVELS.get(level)
