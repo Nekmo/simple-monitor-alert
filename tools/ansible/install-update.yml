@@ -21,3 +21,15 @@
       become: yes
       become_method: sudo
       when: config_path
+    - name: Activate sensors
+      file: state=link src='../monitors-available/sensors.py' path=/etc/simple-monitor-alert/monitors-enabled/sensors.py
+      become: yes
+      become_method: sudo
+    - name: Add sma in sudoers for smartctl
+      lineinfile: "dest=/etc/sudoers line='sma ALL= (ALL) NOPASSWD: /usr/sbin/smartctl' validate='visudo -cf %s'"
+      become: yes
+      become_method: sudo
+    - name: Activate smart
+      file: state=link src='../monitors-available/smart.sh' path=/etc/simple-monitor-alert/monitors-enabled/smart.sh
+      become: yes
+      become_method: sudo
