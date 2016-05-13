@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Add to sudoers:
+# sma ALL= (ALL) NOPASSWD: /usr/sbin/hddtemp
+# No arguments required.
 echo "X-Run-Every-Seconds: 1800"
 
 re='^[0-9]+$'

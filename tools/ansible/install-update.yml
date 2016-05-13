@@ -33,3 +33,11 @@
       file: state=link src='../monitors-available/smart.sh' path=/etc/simple-monitor-alert/monitors-enabled/smart.sh
       become: yes
       become_method: sudo
+    - name: Add sma in sudoers for hddtemp
+      lineinfile: "dest=/etc/sudoers line='sma ALL= (ALL) NOPASSWD: /usr/sbin/hddtemp' validate='visudo -cf %s'"
+      become: yes
+      become_method: sudo
+    - name: Activate hddtemp
+      file: state=link src='../monitors-available/hddtemp.sh' path=/etc/simple-monitor-alert/monitors-enabled/hddtemp.sh
+      become: yes
+      become_method: sudo
