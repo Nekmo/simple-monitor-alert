@@ -91,5 +91,7 @@ ENV/
 # Created by .ignore support plugin (hsz.mobi)
 
 .idea
+/tools/ansible/hosts
 /sma.ini
+/tools/ansible/global.ini
 /storage.json

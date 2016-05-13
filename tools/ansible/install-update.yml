@@ -1,0 +1,45 @@
+# Options:
+# - target (REQUIRED)
+# - Configuration file
+
+
+---
+
+- hosts: '{{ target }}'
+  vars:
+     config_path: "'{{ config|default('') }}'"
+     config_data: "{{ lookup('file', config) }}"
+
+  tasks:
+    - name: Install or update Simple Monitor Alert
+      pip: state=latest name='git+https://github.com/Nekmo/simple-monitor-alert.git@{{ branch|default("master")
+           }}#egg=simple-monitor-alert' editable=no
+      become: yes
+      become_method: sudo
+    - name: Copy configuration
+      blockinfile: block='{{ config_data }}' dest=/etc/simple-monitor-alert/sma.ini
+      become: yes
+      become_method: sudo
+      when: config_path
+    - name: Activate sensors
+      file: state=link src='../monitors-available/sensors.py' path=/etc/simple-monitor-alert/monitors-enabled/sensors.py
+      become: yes
+      become_method: sudo
+    - name: Add sma in sudoers for smartctl
+      lineinfile: "dest=/etc/sudoers line='sma ALL= (ALL) NOPASSWD: /usr/sbin/smartctl' validate='visudo -cf %s'"
+      become: yes
+      become_method: sudo
+    - name: Activate smart
+      file: state=link src='../monitors-available/smart.sh' path=/etc/simple-monitor-alert/monitors-enabled/smart.sh
+      become: yes
+      become_method: sudo
+    - name: Add sma in sudoers for hddtemp
+      lineinfile: "dest=/etc/sudoers line='sma ALL= (ALL) NOPASSWD: /usr/sbin/hddtemp' validate='visudo -cf %s'"
+      become: yes
+      become_method: sudo
+    - name: Activate hddtemp
+      file: state=link src='../monitors-available/hddtemp.sh' path=/etc/simple-monitor-alert/monitors-enabled/hddtemp.sh
+      become: yes
+      become_method: sudo
+    - name: Enable and start sma daemon
+      service: name=sma enabled=yes state=started
