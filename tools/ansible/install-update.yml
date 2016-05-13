@@ -43,3 +43,5 @@
       become_method: sudo
     - name: Enable and start sma daemon
       service: name=sma enabled=yes state=started
+      become: yes
+      become_method: sudo
