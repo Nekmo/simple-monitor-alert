@@ -41,3 +41,5 @@
       file: state=link src='../monitors-available/hddtemp.sh' path=/etc/simple-monitor-alert/monitors-enabled/hddtemp.sh
       become: yes
       become_method: sudo
+    - name: Enable and start sma daemon
+      service: name=sma enabled=yes state=started
