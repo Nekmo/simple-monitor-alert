@@ -103,7 +103,10 @@ class JSONFile(dict):
         self.update(json.load(open(self.path)))
 
     def write(self):
-        json.dump(self, open(self.path, 'w'), sort_keys=True, indent=4, separators=(',', ': '))
+        try:
+            json.dump(self, open(self.path, 'w'), sort_keys=True, indent=4, separators=(',', ': '))
+        except IOError as e:
+            logger.critical("Error writting file {}: {}".format(self.path, e))
 
     def clear(self):
         if sys.version_info >= (3, 3):
