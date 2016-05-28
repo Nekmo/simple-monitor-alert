@@ -14,7 +14,15 @@ import dateutil.tz
 import six
 import socket
 
-from colorclass import Color
+if six.PY3 and sys.version_info < (3,3):
+    class _MetaColor(type):
+        def __getattr__(self, item):
+            return lambda x: x
+
+    class Color(six.with_metaclass(_MetaColor)):
+        pass
+else:
+    from colorclass import Color
 from humanize.time import naturaltime
 from terminaltables.tables import UnixTable
 
