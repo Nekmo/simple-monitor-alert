@@ -133,6 +133,7 @@ class Monitor(object):
 
 class Monitors(object):
     monitors = None
+    _monitors_paths = None
 
     def __init__(self, monitors_dir=None, config=None, sma=None):
         self.monitors_dir, self.config = monitors_dir, config
@@ -142,9 +143,20 @@ class Monitors(object):
         if self.monitors:
             return self.monitors
         monitors_dir = monitors_dir or self.monitors_dir
-        self.monitors = [self.get_monitor(os.path.join(monitors_dir, file))
-                         for file in os.listdir(monitors_dir)]
+        self.monitors = [self.get_monitor(x) for x in self._get_monitors_paths(monitors_dir)]
         return self.monitors
+
+    def _get_monitors_paths(self, monitors_dir):
+        if self._monitors_paths is None:
+            self._monitors_paths =  [os.path.join(monitors_dir, file) for file in os.listdir(monitors_dir)]
+        return self._monitors_paths
+
+    def get_monitors_names(self, monitors_dir=None):
+        monitors_dir = monitors_dir or self.monitors_dir
+        return map(lambda x: os.path.splitext(x.split('/')[-1])[0], self._get_monitors_paths(monitors_dir))
+
+    def is_monitor_enabled(self, name):
+        return name in self.get_monitors_names()
 
     def get_monitor(self, script_path):
         return Monitor(script_path, self.sma)

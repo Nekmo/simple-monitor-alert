@@ -14,6 +14,7 @@ import dateutil.tz
 import six
 import socket
 
+from colorclass import Color
 from humanize.time import naturaltime
 from terminaltables.tables import UnixTable
 
@@ -122,16 +123,16 @@ class JSONFile(dict):
 class MonitorResults(object):
     columns = OrderedDict([
         ('Name', itemgetter('name')),
-        ('Status', lambda x: 'FAIL' if x['fail'] else 'OK'),
+        ('Status', lambda x: Color.red('FAIL') if x['fail'] else Color.green('OK')),
         ('Since', lambda x: human_since(x['since'], True)),
         ('Updated', lambda x: human_since(x['updated_at'], True)),
         ('Times', lambda x: str(x['executions'])),
     ])
 
-    def __init__(self, monitor_name, monitor_results, monitors_info=None):
+    def __init__(self, monitor_name, monitor_results, sma=None):
         self.monitor_name = monitor_name
         self.monitor_results = monitor_results
-        self.monitors_info = monitors_info or MonitorsInfo(os.path.join(get_var_directory(), 'monitors.json'))
+        self.sma = sma
 
     def get_section(self):
         return self.monitor_name
@@ -148,9 +149,9 @@ class MonitorResults(object):
 
 class Results(JSONFile):
 
-    def __init__(self, path, create=True, monitors_info=None):
+    def __init__(self, path, create=True, sma=None):
         super(Results, self).__init__(path, create)
-        self.monitors_info = monitors_info or MonitorsInfo(os.path.join(get_var_directory(), 'monitors.json'))
+        self.sma = sma
 
     @staticmethod
     def get_default_observable_result():
@@ -186,18 +187,28 @@ class Results(JSONFile):
     def __str__(self):
         table_data = [list(MonitorResults.columns.keys())]
         table_splitted = []
-        sections = {0: ''}
-        gap = 2
+        sections = {}
+        start_size = 4
         for name, monitor_results in self['monitors'].items():
-            table_data.extend(MonitorResults(name, monitor_results, self.monitors_info).get_results_columns())
-            sections[len(table_data)] = name
+            table_data.extend(MonitorResults(name, monitor_results, self.sma).get_results_columns())
+            sections[len(table_data)-1] = name
         table = UnixTable(table_data)
         table = table.table.splitlines()
-
+        head = '\n'.join(table[:3])
+        foot = table[-1]
         start = 0
+        table = table[3:]
         for pos, name in sorted(sections.items()):
-            table_splitted.append(name)
-            table_splitted.append('\n'.join(table[start+gap:pos+gap]))
+            section_head = '{}\x1b(B{}\x1b(0{}'.format(head[:start_size], name, head[start_size+len(name):])
+            table_splitted.append(section_head)
+            table_splitted.append('\n'.join(table[start:pos]))
+            table_splitted.append(foot)
+            enabled = self.sma.monitors.is_monitor_enabled(name)
+            last_execution = self.sma.monitors_info.get(name, {}).get('last_execution')
+            table_splitted.append('Enabled: {} Last update: {}\n'.format(
+                getattr(Color, 'green' if enabled else 'red')(enabled),
+                human_since(last_execution, True) if last_execution else '??'
+            ))
             start = pos
         return '\n'.join(table_splitted)
 
@@ -230,7 +241,7 @@ class SMA(object):
             'monitors': {},
         })
         self.config = Config(config_file)
-        self.results = Results(results_file)
+        self.results = Results(results_file, sma=self)
         self.monitors_info = MonitorsInfo(os.path.join(get_var_directory(), 'monitors.json'))
         self.monitors = Monitors(monitors_dir, self.config, self)
         self.alerts = Alerts(self, alerts_dir)
