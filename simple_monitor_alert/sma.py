@@ -5,7 +5,7 @@ import time
 import logging
 
 import json
-from _operator import itemgetter
+from operator import itemgetter
 from collections import OrderedDict
 
 import dateutil
