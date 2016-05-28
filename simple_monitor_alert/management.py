@@ -62,6 +62,9 @@ def execute_from_command_line(argv=None):
     parse_alerts.add_argument('--test', help = 'Test alert', action='store_true')
     parse_alerts.add_argument('alert_section', nargs='?', help='Alert section to see')
 
+    parse_results = parser.sub.add_parser('results', help='Monitors results')
+    parse_results.set_defaults(which='results')
+
 
     args = parser.parse_args(argv[1:])
 
@@ -76,3 +79,5 @@ def execute_from_command_line(argv=None):
     elif args.which == 'alerts' and args.test:
         sma = SMA(args.monitors_dir, args.alerts_dir, args.config)
         sma.alerts.test()
+    elif args.which == 'results':
+        print(SMA(args.monitors_dir, args.alerts_dir, args.config).results)

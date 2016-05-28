@@ -2,7 +2,7 @@ import sys
 
 from simple_monitor_alert.alerts import Alerts
 from simple_monitor_alert.lines import Observable, ItemLine
-from simple_monitor_alert.sma import JSONFile, ObservableResults, Config
+from simple_monitor_alert.sma import JSONFile, Results, Config
 
 
 class FakeJSONFile(JSONFile):
@@ -17,7 +17,7 @@ class FakeJSONFile(JSONFile):
         pass
 
 
-class FakeObservableResults(FakeJSONFile, ObservableResults):
+class FakeObservableResults(FakeJSONFile, Results):
     monitor = None
 
     def __init__(self, data=None):

@@ -5,16 +5,23 @@ import time
 import logging
 
 import json
+from _operator import itemgetter
+from collections import OrderedDict
 
 import dateutil
+import dateutil.parser
 import dateutil.tz
 import six
 import socket
+
+from humanize.time import naturaltime
+from terminaltables.tables import UnixTable
 
 from simple_monitor_alert import __version__
 from simple_monitor_alert.alerts import Alerts
 from simple_monitor_alert.lines import ItemLine, Observable, get_observables_from_lines
 from simple_monitor_alert.monitor import Monitors, log_evaluate
+from simple_monitor_alert.utils.dates import human_since
 
 if six.PY2:
     from ConfigParser import ConfigParser
@@ -112,7 +119,38 @@ class JSONFile(dict):
             self[:] = []
 
 
-class ObservableResults(JSONFile):
+class MonitorResults(object):
+    columns = OrderedDict([
+        ('Name', itemgetter('name')),
+        ('Status', lambda x: 'FAIL' if x['fail'] else 'OK'),
+        ('Since', lambda x: human_since(x['since'], True)),
+        ('Updated', lambda x: human_since(x['updated_at'], True)),
+        ('Times', lambda x: str(x['executions'])),
+    ])
+
+    def __init__(self, monitor_name, monitor_results, monitors_info=None):
+        self.monitor_name = monitor_name
+        self.monitor_results = monitor_results
+        self.monitors_info = monitors_info or MonitorsInfo(os.path.join(get_var_directory(), 'monitors.json'))
+
+    def get_section(self):
+        return self.monitor_name
+
+    def get_results_columns(self, columns=None):
+        for name, result in self.monitor_results.items():
+            result = dict(result)
+            result['name'] = name
+            yield [fn(result) for fn in self.columns.values()]
+
+    def __str__(self):
+        return '{}\n'.format(UnixTable(list(self.get_results_columns())).table)
+
+
+class Results(JSONFile):
+
+    def __init__(self, path, create=True, monitors_info=None):
+        super(Results, self).__init__(path, create)
+        self.monitors_info = monitors_info or MonitorsInfo(os.path.join(get_var_directory(), 'monitors.json'))
 
     @staticmethod
     def get_default_observable_result():
@@ -145,6 +183,27 @@ class ObservableResults(JSONFile):
             return True
         return False
 
+    def __str__(self):
+        table_data = [list(MonitorResults.columns.keys())]
+        table_splitted = []
+        sections = {0: ''}
+        gap = 2
+        for name, monitor_results in self['monitors'].items():
+            table_data.extend(MonitorResults(name, monitor_results, self.monitors_info).get_results_columns())
+            sections[len(table_data)] = name
+        table = UnixTable(table_data)
+        table = table.table.splitlines()
+
+        start = 0
+        for pos, name in sorted(sections.items()):
+            table_splitted.append(name)
+            table_splitted.append('\n'.join(table[start+gap:pos+gap]))
+            start = pos
+        return '\n'.join(table_splitted)
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class MonitorsInfo(JSONFile):
     def get_monitor(self, monitor, create=True):
@@ -171,7 +230,7 @@ class SMA(object):
             'monitors': {},
         })
         self.config = Config(config_file)
-        self.results = ObservableResults(results_file)
+        self.results = Results(results_file)
         self.monitors_info = MonitorsInfo(os.path.join(get_var_directory(), 'monitors.json'))
         self.monitors = Monitors(monitors_dir, self.config, self)
         self.alerts = Alerts(self, alerts_dir)
