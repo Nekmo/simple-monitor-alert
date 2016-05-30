@@ -92,7 +92,6 @@ class Monitor(object):
                 timeout = self.get_headers(self.parse_lines([line])).get('X-Timeout')
                 timeout = int(timeout) if timeout is not None else None
                 if timeout and self.timeout is None:
-                    # TODO: no se está alargando la vida
                     l.cancel()
                     l = self.get_timer(popen, timeout - (time() - started_at))
                 self.timeout = timeout
