@@ -4,6 +4,8 @@ import subprocess
 import warnings
 import logging
 from collections import defaultdict
+from time import sleep, time
+from threading import Timer
 
 import dateutil
 import six
@@ -22,7 +24,9 @@ TIMEOUT = 5
 def get_verbose_condition(observable):
     value = observable.get_line_value('value')
     expected = observable.get_matcher()
-    if expected:
+    if hasattr(expected, 'pattern'):
+        expected = expected.pattern
+    elif expected:
         expected = expected.parse()
     if isinstance(expected, six.string_types) or isinstance(expected, int):
         expected = '== {}'.format(expected)
@@ -52,35 +56,75 @@ class Monitor(object):
     lines = None
     headers = None
     items = None
+    timeout = None
 
     def __init__(self, script_path, sma=None):
         self.script_path = script_path
         self.sma = sma
         self.name = os.path.splitext(os.path.split(script_path)[1])[0]
 
-    def execute(self, parameters=None):
-        env = os.environ
-        if parameters:
-            env = env.copy()
-            env.update(parameters)
+    def _execute_process(self, env):
+        lines = []
         popen = subprocess.Popen([self.script_path], stdout=subprocess.PIPE, env=env)
-        if sys.version_info >= (3, 3):
-            popen.wait(TIMEOUT)
-        else:
-            def terminate_popen():
-                popen.terminate()
-                popen.kill()
-            from threading import Timer
-            l = Timer(TIMEOUT, terminate_popen)
-            l.start()
-            popen.wait()
-            l.cancel()
-        lines = self.parse_lines(popen.stdout.readlines())
+
+        l = self.get_timer(popen)
+        started_at = time()
+        # sleep(.1)
+
+        # Realtime Read
+        blocksize = 1
+        line = b''
+        missing_data = True
+        while popen.poll() is None or missing_data:
+            if self.timeout:
+                # No need to wait for X-Timeout header
+                blocksize = -1
+            if popen.poll() is not None and missing_data:
+                # I force the loop if is the last cycle
+                blocksize = -1
+                missing_data = False
+            line += popen.stdout.read(blocksize)
+            if b'\n' not in line:
+                continue
+            processed_lines = line.split(b'\n')
+            for line in processed_lines:
+                lines.append(line + b'\n')
+                timeout = self.get_headers(self.parse_lines([line])).get('X-Timeout')
+                timeout = int(timeout) if timeout is not None else None
+                if timeout and self.timeout is None:
+                    # TODO: no se está alargando la vida
+                    l.cancel()
+                    l = self.get_timer(popen, timeout - (time() - started_at))
+                self.timeout = timeout
+        l.cancel()
+        return lines
+
+    def get_timer(self, popen, timeout=TIMEOUT):
+        def terminate_popen():
+            print('Terminate!')
+            popen.terminate()
+            print('kill!')
+            popen.kill()
+        timeout = timeout if timeout > 0 else 0
+        l = Timer(timeout, terminate_popen)
+        l.start()
+        return l
+
+    def execute(self, parameters=None):
+        env = self.get_env(parameters)
+        lines = self.parse_lines(self._execute_process(env))
         self.lines = list(lines)
         self.items = self.get_observables(self.lines, parameters)
         self.headers = self.get_headers(self.lines)
         # self.evaluate_items()
         return self.items.values()
+
+    def get_env(self, parameters):
+        env = os.environ
+        if parameters:
+            env = env.copy()
+            env.update(parameters)
+        return env
 
     def parse_lines(self, lines, on_error=InvalidScriptLineLogging):
         for i, line in enumerate(lines):
@@ -91,6 +135,8 @@ class Monitor(object):
                     warnings.warn_explicit(on_error(line, self.script_path), on_error, self.script_path, i + 1)
                 elif issubclass(on_error, Exception):
                     raise on_error(line, self.script_path)
+                elif on_error is None:
+                    pass
                 else:
                     on_error(line, self.script_path)
 

@@ -236,7 +236,7 @@ class Observable(dict):
 
     def evaluate(self, value=None):
         if value is None:
-            value = self['value'].value
+            value = getattr(self.get('value'), 'value', '')
         matcher = self.get_matcher()
         return matcher.match(value)
 
