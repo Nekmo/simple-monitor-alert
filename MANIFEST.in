@@ -1,3 +1,5 @@
+include LICENSE
+include tox.ini
 include requirements.txt
 include sma-template.ini
 recursive-include alerts *.py *.sh

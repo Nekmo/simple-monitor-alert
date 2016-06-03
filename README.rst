@@ -44,6 +44,12 @@ Available monitors:
 - **Network**: ping, [port, dynamic ip].
 - **Others**: [Log monitor, google cloud print]
 
+Screencast
+==========
+
+.. image:: https://asciinema.org/a/ez93g4bewogf6wss7bxxnc5tz.png
+  :target: https://asciinema.org/a/ez93g4bewogf6wss7bxxnc5tz
+
 
 3-Step Quick Start Guide
 ========================
