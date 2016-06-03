@@ -156,3 +156,15 @@ un tiempo mínimo para volver a ejecutarlo:
     echo "X-Run-Every-Seconds: 600"
     echo "observable.name = 'My observable name'"
     ...
+
+
+Cabecera de error
+-----------------
+Esta cabecera permite informar de un error en el script, normalmente por una mala configuración.
+
+.. code-block:: bash
+
+    #!/usr/bin/env bash
+    echo "X-Error: 'You need to configure this plugin to use'"
+
+

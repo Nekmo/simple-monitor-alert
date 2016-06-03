@@ -100,9 +100,7 @@ class Monitor(object):
 
     def get_timer(self, popen, timeout=TIMEOUT):
         def terminate_popen():
-            print('Terminate!')
             popen.terminate()
-            print('kill!')
             popen.kill()
         timeout = timeout if timeout > 0 else 0
         l = Timer(timeout, terminate_popen)
