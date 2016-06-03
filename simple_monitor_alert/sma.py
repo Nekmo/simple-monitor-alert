@@ -24,7 +24,12 @@ if six.PY3 and sys.version_info < (3,3):
 else:
     from colorclass import Color
 from humanize.time import naturaltime
-from terminaltables.tables import UnixTable
+import terminaltables
+
+if hasattr(terminaltables, '__version__') and terminaltables.__version__ >= '3.0.0':
+    from terminaltables.other_tables import UnixTable
+else:
+    from terminaltables.tables import UnixTable
 
 from simple_monitor_alert import __version__
 from simple_monitor_alert.alerts import Alerts
