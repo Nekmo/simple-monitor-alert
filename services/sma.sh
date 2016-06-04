@@ -12,7 +12,7 @@
 
 # Change the next 3 lines to suit where you install your script and what you want to call it
 DIR=/
-DAEMON=/usr/bin/sma
+DAEMON=/usr/local/bin/sma
 DAEMON_NAME=sma
 
 # Add any command line options for your daemon here
