@@ -17,6 +17,13 @@ import os
 import sys
 import uuid
 
+if sys.version_info < (3, 2):
+    def makedirs(path, mode=0o777, exist_ok=False):
+        if not exist_ok or (exist_ok and not os.path.exists(path)):
+            os.makedirs(path, mode)
+else:
+    from os import makedirs
+
 ###############################
 #  Configuración del paquete  #
 ###############################
@@ -337,7 +344,7 @@ class SystemInstallCommand(install):
         print('Installing things that are not Python (system files).')
         for directory in [ENABLED_MONITORS_DIR, os.path.dirname(AVAILABLE_MONITORS_DIR)]:
             print('Creating directory {}'.format(directory))
-            os.makedirs(directory, exist_ok=True)
+            makedirs(directory, exist_ok=True)
         dir_path = os.path.dirname(os.path.realpath(__file__))
         for src_name, dest in [('monitors', MONITORS_DIR), ('alerts', ALERTS_DIR)]:
             print('Copying directory "{}" to "{}"'.format(os.path.join(dir_path, src_name), dest))
@@ -357,7 +364,7 @@ class SystemInstallCommand(install):
         if p.returncode not in [0, 9]:
             raise Exception('It has failed to create the user {}. Returncode: {}'.format(USERNAME, p.returncode))
         print('Creating variable data directory: {}'.format(VAR_DIRECTORY))
-        os.makedirs(VAR_DIRECTORY, 0o700, True)
+        makedirs(VAR_DIRECTORY, 0o700, True)
         uid = pwd.getpwnam(USERNAME).pw_uid
         gid = grp.getgrnam("root").gr_gid
         os.chown(VAR_DIRECTORY, uid, gid)
