@@ -36,7 +36,7 @@ else:
             self.req = req
 
     def parse_requirements(reqs_path, *args, **kwargs):
-        return [line.strip() for line in open(reqs_path).readlines()]
+        return [FakeReq(line.strip()) for line in open(reqs_path).readlines()]
 
 
 def first_path_exist(paths):
