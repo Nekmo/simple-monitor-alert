@@ -385,7 +385,10 @@ class SystemInstallCommand(install):
                            os.path.join(ENABLED_MONITORS_DIR, enabled_monitor))
         print('Creating user {}'.format(USERNAME))
         p = subprocess.Popen(['useradd', USERNAME])
-        p.wait(2)
+        if sys.version_info >= (3,3):
+            p.wait(2)
+        else:
+            p.wait()
         if p.returncode not in [0, 9]:
             raise Exception('It has failed to create the user {}. Returncode: {}'.format(USERNAME, p.returncode))
         print('Creating variable data directory: {}'.format(VAR_DIRECTORY))
