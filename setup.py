@@ -70,6 +70,10 @@ SERVICES = [
         'services/sma.service',
         '{}/sma.service'.format(first_path_exist(['/usr/lib/systemd/system', '/lib/systemd/system']))
     ),
+    (
+        'services/sma.sh',
+        '/etc/init.d/sma.sh'
+    )
 ]
 
 #  Información del autor
