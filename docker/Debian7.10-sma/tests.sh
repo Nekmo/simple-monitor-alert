@@ -4,4 +4,4 @@ ls /etc/simple-monitor-alert/sma.ini
 ls /etc/init.d/sma.sh
 /etc/init.d/sma.sh start
 /etc/init.d/sma.sh status
-sudo -u sma sma service
+# sudo -u sma sma service
