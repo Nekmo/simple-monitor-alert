@@ -24,6 +24,12 @@ if sys.version_info < (3, 2):
 else:
     from os import makedirs
 
+
+def first_path_exist(paths):
+    for test_path in paths:
+        if os.path.exists(test_path):
+            return test_path
+
 ###############################
 #  Configuración del paquete  #
 ###############################
@@ -45,7 +51,12 @@ DEFAULT_ENABLEDS_MONITORS = ['hdds.sh', 'system.sh']
 USERNAME = 'sma'
 VAR_DIRECTORY = '/var/lib/simple-monitor-alert'
 
-SERVICES = [('services/sma.service', '/usr/lib/systemd/system/sma.service')]
+SERVICES = [
+    (
+        'services/sma.service',
+        '{}/sma.service'.format(first_path_exist(['/usr/lib/systemd/system', '/lib/systemd/system']))
+    ),
+]
 
 #  Información del autor
 from setuptools.command.install import install
