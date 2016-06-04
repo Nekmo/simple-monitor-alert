@@ -1,0 +1,3 @@
+This directory contains Docker images to test the installation process.
+
+To install Simple Monitor Alert on your machine, follow the instructions in the README file in the root.
