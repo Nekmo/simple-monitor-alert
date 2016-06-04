@@ -29,10 +29,14 @@ else:
 if hasattr(pip, '__version__') and LooseVersion(pip.__version__) >= LooseVersion('6.0.0'):
     from pip.req import parse_requirements
 else:
-    from pip.req import parse_requirements as parse_requirements_
+    class FakeReq(object):
+        link = None
+
+        def __init__(self, req):
+            self.req = req
 
     def parse_requirements(reqs_path, *args, **kwargs):
-        return parse_requirements_(reqs_path)
+        return [line.strip() for line in open(reqs_path).readlines()]
 
 
 def first_path_exist(paths):
