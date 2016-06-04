@@ -130,7 +130,8 @@ class JSONFile(dict):
         if sys.version_info >= (3, 3):
             super().clear()
         else:
-            self[:] = []
+            for key in self:
+                del self[key]
 
 
 class MonitorResults(object):

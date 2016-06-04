@@ -5,7 +5,7 @@ After=syslog.target
 [Service]
 Type=simple
 User=sma
-ExecStart=/usr/bin/sma --quiet service
+ExecStart=/bin/sh -c 'sma --quiet service'
 StandardOutput=syslog
 StandardError=syslog
 

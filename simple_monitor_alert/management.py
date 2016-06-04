@@ -65,7 +65,6 @@ def execute_from_command_line(argv=None):
     parse_results = parser.sub.add_parser('results', help='Monitors results')
     parse_results.set_defaults(which='results')
 
-
     args = parser.parse_args(argv[1:])
 
     create_logger('sma', args.loglevel)

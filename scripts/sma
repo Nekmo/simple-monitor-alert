@@ -4,5 +4,5 @@ import sys
 if __name__ == "__main__":
 
     from simple_monitor_alert.management import execute_from_command_line
-    print(sys.argv)
+
     execute_from_command_line(sys.argv)
