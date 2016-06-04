@@ -26,7 +26,7 @@ if sys.version_info < (3, 2):
 else:
     from os import makedirs
 
-if LooseVersion(pip.__version__) >= LooseVersion('6.0.0'):
+if hasattr(pip, '__version__') and LooseVersion(pip.__version__) >= LooseVersion('6.0.0'):
     from pip.req import parse_requirements
 else:
     from pip.req import parse_requirements as parse_requirements_
