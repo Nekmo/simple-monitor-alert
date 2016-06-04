@@ -38,7 +38,7 @@ from simple_monitor_alert.monitor import Monitors, log_evaluate
 from simple_monitor_alert.utils.dates import human_since
 
 if six.PY2:
-    from ConfigParser import ConfigParser
+    from ConfigParser import ConfigParser, NoSectionError
 else:
     from configparser import ConfigParser, NoSectionError
 
