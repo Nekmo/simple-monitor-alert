@@ -9,8 +9,10 @@ import subprocess
 import pwd
 
 import grp
+from distutils.version import LooseVersion
+
 from setuptools import setup, find_packages
-from pip.req import parse_requirements
+import pip
 from distutils.util import convert_path
 from fnmatch import fnmatchcase
 import os
@@ -23,6 +25,14 @@ if sys.version_info < (3, 2):
             os.makedirs(path, mode)
 else:
     from os import makedirs
+
+if LooseVersion(pip.__version__) >= LooseVersion('6.0.0'):
+    from pip.req import parse_requirements
+else:
+    from pip.req import parse_requirements as parse_requirements_
+
+    def parse_requirements(reqs_path, *args, **kwargs):
+        return parse_requirements_(reqs_path)
 
 
 def first_path_exist(paths):
