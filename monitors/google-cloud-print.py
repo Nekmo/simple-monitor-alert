@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+"""Google Cloud Print Monitor
+Send an alert if printers are offline.
+
+Run this script first with the "register" parameter:
+sudo -u sma ./google-cloud-print.py register
+"""
 import getpass
 import os
 import sys

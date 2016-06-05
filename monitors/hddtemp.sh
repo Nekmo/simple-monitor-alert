@@ -2,6 +2,11 @@
 # Add to sudoers:
 # sma ALL= (ALL) NOPASSWD: /usr/sbin/hddtemp
 # No arguments required.
+# You must have installed: hddtemp
+# Debian/Ubuntu: apt-get install hddtemp
+# Fedora: yum install hddtemp
+# Arch: pacman -S hddtemp
+
 echo "X-Run-Every-Seconds: 1800"
 
 re='^[0-9]+$'

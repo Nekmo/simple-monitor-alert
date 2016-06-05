@@ -4,6 +4,14 @@
 # It requires a parameter: service name. For example, sshd.
 # [service]
 # service_status.param = sshd
+# You can monitor multiple services:
+#
+# [service]
+# service_status(sshd).param = sshd
+# service_status(nginx).param = nginx
+#
+# Add the configuration to:
+# /etc/simple-monitor-alert/sma.ini
 
 echo "service_status.name = 'Service (daemon) status'."
 echo "service_status.expected = 'active'"

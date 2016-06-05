@@ -4,6 +4,11 @@
 # - RAM
 # - SWAP
 # No parameters required.
+# You must have installed: procps
+# Debian: apt-get install procps
+# Fedora: yum install procps-ng
+# Arch: pacman -S procps-ng
+
 
 echo "cpu.name = 'CPU percentage usage'"
 echo "cpu.expected= <= 80"

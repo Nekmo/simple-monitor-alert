@@ -1,6 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Sensors Monitor
+Check the output of "sensors" command. Includes:
+- Temperature
+- Voltage
+- Fan
+- Intrusion
 
+Run the "sensors" command to see what is being monitored.
+More info in:
+https://wiki.archlinux.org/index.php/lm_sensors
+
+You must have installed: lm-sensors
+Debian/Ubuntu: apt-get install lm-sensors
+Fedora: yum install lm-sensors
+Arch: pacman -S lm_sensors
+"""
 from subprocess import check_output
 
 import re

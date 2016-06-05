@@ -26,6 +26,9 @@ load_time.param = POST http://nekmo.com {"Accept": "text/plain"} "Request conten
 response_code.expected = 201
 load_time.param = GET https://nekmo.com/subpage
 content.param = GET https://nekmo.com/api/ "It requires authentication"
+
+Add the configuration to:
+/etc/simple-monitor-alert/sma.ini
 """
 import os
 import shlex

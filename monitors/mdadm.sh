@@ -2,6 +2,8 @@
 # Mdadm monitor
 # Check that no RAIDS is degraded.
 # No parameters required.
+# It only works with softraid (mdadm).
+# This monitor will not care if you do not have RAIDs.
 
 if [[ ! -f /proc/mdstat ]]; then
     exit 0;
