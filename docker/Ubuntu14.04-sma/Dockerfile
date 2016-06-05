@@ -1,4 +1,4 @@
-FROM debian:8.0
+FROM ubuntu:14.04
 RUN apt-get update
 RUN apt-get install -y python python-pip
 RUN apt-get install -y git
