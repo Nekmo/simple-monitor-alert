@@ -127,8 +127,21 @@ class Alerts(list):
                 self.sma.results.add_alert_to_observable_result(observable, alert.section)
 
     def test(self, section=None):
+        from simple_monitor_alert import __version__
+        from simple_monitor_alert.sma import get_hostname
         for alert in self:
-            alert.send('Title', 'Body message')
+            alert.send('[SMA] Check... Check... This is an alert notification',
+                       'Congratulations! You are receiving this message because you have configured correctly '
+                       'Simple Monitor Alert. Here you have some extra information.\n\n'
+                       '- SMA version: {sma_version}\n'
+                       '- Python version: {python_version}\n'
+                       '- Hostname: {hostname}\n'
+                       '- Send time: {dt}\n'
+                       '- Alert section: {section}'.format(sma_version=__version__,
+                                                           python_version=sys.version.replace('\n', ' '),
+                                                           hostname=get_hostname(),
+                                                           dt=datetime.datetime.now(),
+                                                           section=alert.section))
 
     def clear(self):
         if sys.version_info >= (3, 3):
