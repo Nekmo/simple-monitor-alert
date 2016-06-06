@@ -2,7 +2,6 @@ import json
 import os
 import sys
 
-import six
 
 if sys.version_info < (3, 2):
     def makedirs(path, mode=0o777, exist_ok=False):
@@ -27,6 +26,7 @@ def validate_write_dir(directory, log=lambda x: x):
 
 
 def create_file(path, content=''):
+    import six
     if not isinstance(content, six.string_types):
         content = json.dumps(content)
     if not os.path.exists(path):
