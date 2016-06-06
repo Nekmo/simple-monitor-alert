@@ -11,7 +11,7 @@ import pwd
 import grp
 from distutils.version import LooseVersion
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Command
 import pip
 from distutils.util import convert_path
 from fnmatch import fnmatchcase
@@ -407,8 +407,22 @@ class SystemInstallCommand(install):
             shutil.copy(os.path.join(dir_path, SMA_TEMPLATE_FILENAME), SMA_FILE)
 
 
+class FakeBdistWheel(Command):
+    description = 'Faked Wheel'
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        print('Sorry, but wheel is not supported in this package!')
+
+
 setup(
-    cmdclass={'install': SystemInstallCommand},
+    cmdclass={'install': SystemInstallCommand, 'bdist_wheel': FakeBdistWheel},
 
     name=PACKAGE_NAME,
     version=package_version,
