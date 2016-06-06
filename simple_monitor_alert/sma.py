@@ -36,6 +36,7 @@ from simple_monitor_alert.alerts import Alerts
 from simple_monitor_alert.lines import ItemLine, Observable, get_observables_from_lines
 from simple_monitor_alert.monitor import Monitors, log_evaluate
 from simple_monitor_alert.utils.dates import human_since
+from simple_monitor_alert.utils.files import makedirs
 
 if six.PY2:
     from ConfigParser import ConfigParser, NoSectionError
@@ -58,7 +59,7 @@ def validate_write_dir(directory, log=lambda x: x):
         log('{} exists but the destination does not exist. Is a broken link?'.format(directory))
         return False
     try:
-        os.makedirs(directory, exist_ok=True)
+        makedirs(directory, exist_ok=True)
     except OSError:
         log('No write permissions to the directory {}.'.format(directory))
         return False

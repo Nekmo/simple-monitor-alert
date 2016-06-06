@@ -5,6 +5,8 @@
 import argparse
 import logging
 
+import sys
+
 from simple_monitor_alert.sma import SMA, SMAService
 
 SMA_INI_FILE = '/etc/simple-monitor-alert/sma.ini'
@@ -29,6 +31,36 @@ def create_logger(name, level=logging.INFO):
 
     # add ch to logger
     logger.addHandler(ch)
+
+
+def set_default_subparser(self, name, args=None):
+    """default subparser selection. Call after setup, just before parse_args()
+    name: is the name of the subparser to call by default
+    args: if set is the argument list handed to parse_args()
+
+    , tested with 2.7, 3.2, 3.3, 3.4
+    it works with 2.6 assuming argparse is installed
+    """
+    subparser_found = False
+    for arg in sys.argv[1:]:
+        if arg in ['-h', '--help']:  # global help if no subparser
+            break
+    else:
+        for x in self._subparsers._actions:
+            if not isinstance(x, argparse._SubParsersAction):
+                continue
+            for sp_name in x._name_parser_map.keys():
+                if sp_name in sys.argv[1:]:
+                    subparser_found = True
+        if not subparser_found:
+            # insert default in first position, this implies no
+            # global options without a sub_parsers specified
+            if args is None:
+                sys.argv.insert(1, name)
+            else:
+                args.insert(0, name)
+
+argparse.ArgumentParser.set_default_subparser = set_default_subparser
 
 
 def execute_from_command_line(argv=None):
@@ -57,6 +89,9 @@ def execute_from_command_line(argv=None):
     parse_service = parser.sub.add_parser('service', help='Run SMA as service (daemon).')
     parse_service.set_defaults(which='service')
 
+    parse_service = parser.sub.add_parser('one-shot', help='Run SMA once and exit')
+    parse_service.set_defaults(which='one-shot')
+
     parse_alerts = parser.sub.add_parser('alerts', help='Alerts options.')
     parse_alerts.set_defaults(which='alerts')
     parse_alerts.add_argument('--test', help = 'Test alert', action='store_true')
@@ -65,11 +100,12 @@ def execute_from_command_line(argv=None):
     parse_results = parser.sub.add_parser('results', help='Monitors results')
     parse_results.set_defaults(which='results')
 
+    parser.set_default_subparser('one-shot')
     args = parser.parse_args(argv[1:])
 
     create_logger('sma', args.loglevel)
 
-    if not getattr(args, 'which', None):
+    if not getattr(args, 'which', None) or args.which == 'one-shot':
         sma = SMA(args.monitors_dir, args.alerts_dir, args.config)
         sma.evaluate_and_alert()
     elif args.which == 'service':

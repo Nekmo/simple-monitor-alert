@@ -18,13 +18,7 @@ from fnmatch import fnmatchcase
 import os
 import sys
 import uuid
-
-if sys.version_info < (3, 2):
-    def makedirs(path, mode=0o777, exist_ok=False):
-        if not exist_ok or (exist_ok and not os.path.exists(path)):
-            os.makedirs(path, mode)
-else:
-    from os import makedirs
+from simple_monitor_alert.utils.files import makedirs
 
 if hasattr(pip, '__version__') and LooseVersion(pip.__version__) >= LooseVersion('6.0.0'):
     from pip.req import parse_requirements
