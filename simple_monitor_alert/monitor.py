@@ -34,7 +34,7 @@ def get_verbose_condition(observable):
 
 
 def log_evaluate(observable, result=None, use_logger=True):
-    from simple_monitor_alert.sma import get_hostname
+    from simple_monitor_alert.utils.system import get_hostname
     result = result or observable.evaluate()
     level = 'success' if result else observable.get_line_value('level') or 'warning'
     msg = '{} - - Trigger: [{}] ({}) {}. '.format(get_hostname(), level,

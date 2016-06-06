@@ -1,18 +1,15 @@
 import datetime
+import logging
 import os
 import sys
 import time
-import logging
-
-import json
-from operator import itemgetter
 from collections import OrderedDict
+from operator import itemgetter
 
 import dateutil
 import dateutil.parser
 import dateutil.tz
 import six
-import socket
 
 if six.PY3 and sys.version_info < (3,3):
     class _MetaColor(type):
@@ -23,7 +20,6 @@ if six.PY3 and sys.version_info < (3,3):
         pass
 else:
     from colorclass import Color
-from humanize.time import naturaltime
 import terminaltables
 
 if hasattr(terminaltables, '__version__') and terminaltables.__version__ >= '3.0.0':
@@ -33,10 +29,10 @@ else:
 
 from simple_monitor_alert import __version__
 from simple_monitor_alert.alerts import Alerts
-from simple_monitor_alert.lines import ItemLine, Observable, get_observables_from_lines
+from simple_monitor_alert.lines import ItemLine, get_observables_from_lines
 from simple_monitor_alert.monitor import Monitors, log_evaluate
 from simple_monitor_alert.utils.dates import human_since
-from simple_monitor_alert.utils.files import makedirs
+from simple_monitor_alert.utils.files import validate_write_dir, create_file, JSONFile
 
 if six.PY2:
     from ConfigParser import ConfigParser, NoSectionError
@@ -46,33 +42,6 @@ else:
 WAIT_SECONDS = 60
 DEFAULT_VAR_DIRECTORY = os.environ.get('VAR_DIRECTORY', '/var/lib/simple-monitor-alert')
 logger = logging.getLogger('sma')
-
-
-def get_hostname():
-    return socket.gethostname()
-
-
-def validate_write_dir(directory, log=lambda x: x):
-    if os.path.lexists(directory) and os.access(directory, os.W_OK):
-        return True
-    if os.path.lexists(directory) and not os.path.exists(directory):
-        log('{} exists but the destination does not exist. Is a broken link?'.format(directory))
-        return False
-    try:
-        makedirs(directory, exist_ok=True)
-    except OSError:
-        log('No write permissions to the directory {}.'.format(directory))
-        return False
-    return os.access(directory, os.W_OK)
-
-
-def create_file(path, content=''):
-    if not isinstance(content, six.string_types):
-        content = json.dumps(content)
-    if not os.path.exists(path):
-        with open(path, 'w') as f:
-            f.write(content)
-    return path
 
 
 def get_var_directory():
@@ -110,29 +79,6 @@ class Config(ConfigParser):
         if not monitor:
             return
         return monitor.get((observable_name, group_name), None)
-
-
-class JSONFile(dict):
-    def __init__(self, path, create=True):
-        super(JSONFile, self).__init__()
-        if create:
-            create_file(path, '{}')
-        self.path = path
-        self.read()
-
-    def read(self):
-        self.clear()
-        self.update(json.load(open(self.path)))
-
-    def write(self):
-        json.dump(self, open(self.path, 'w'), sort_keys=True, indent=4, separators=(',', ': '))
-
-    def clear(self):
-        if sys.version_info >= (3, 3):
-            super().clear()
-        else:
-            for key in self:
-                del self[key]
 
 
 class MonitorResults(object):

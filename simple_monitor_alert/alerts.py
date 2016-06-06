@@ -42,7 +42,7 @@ class ObservableCommunication(dict):
     def __init__(self, observable, fail, **kwargs):
         super(ObservableCommunication, self).__init__(**kwargs)
         self.observable = observable
-        from simple_monitor_alert.sma import get_hostname
+        from simple_monitor_alert.utils.system import get_hostname
         self['observable'] = observable
         self['fail'] = fail
         self['hostname'] = get_hostname()
@@ -128,7 +128,7 @@ class Alerts(list):
 
     def test(self, section=None):
         from simple_monitor_alert import __version__
-        from simple_monitor_alert.sma import get_hostname
+        from simple_monitor_alert.utils.system import get_hostname
         for alert in self:
             alert.send('[SMA] Check... Check... This is an alert notification',
                        'Congratulations! You are receiving this message because you have configured correctly '

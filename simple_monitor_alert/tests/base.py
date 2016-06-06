@@ -2,7 +2,8 @@ import sys
 
 from simple_monitor_alert.alerts import Alerts
 from simple_monitor_alert.lines import Observable, ItemLine
-from simple_monitor_alert.sma import JSONFile, Results, Config
+from simple_monitor_alert.sma import Results, Config
+from simple_monitor_alert.utils.files import JSONFile
 
 
 class FakeJSONFile(JSONFile):

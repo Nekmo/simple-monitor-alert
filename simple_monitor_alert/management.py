@@ -67,7 +67,6 @@ def execute_from_command_line(argv=None):
     """
     A simple method that runs a ManagementUtility.
     """
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--monitors-dir', default=MONITORS_DIR)
     parser.add_argument('--alerts-dir', default=ALERTS_DIR)
@@ -89,8 +88,8 @@ def execute_from_command_line(argv=None):
     parse_service = parser.sub.add_parser('service', help='Run SMA as service (daemon).')
     parse_service.set_defaults(which='service')
 
-    parse_service = parser.sub.add_parser('one-shot', help='Run SMA once and exit')
-    parse_service.set_defaults(which='one-shot')
+    parse_oneshot = parser.sub.add_parser('one-shot', help='Run SMA once and exit')
+    parse_oneshot.set_defaults(which='one-shot')
 
     parse_alerts = parser.sub.add_parser('alerts', help='Alerts options.')
     parse_alerts.set_defaults(which='alerts')

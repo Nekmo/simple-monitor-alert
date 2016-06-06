@@ -11,7 +11,8 @@ import dateutil
 import dateutil.tz
 
 
-from simple_monitor_alert.sma import create_file, get_var_directory, JSONFile
+from simple_monitor_alert.sma import get_var_directory, JSONFile
+from simple_monitor_alert.utils.files import create_file, JSONFile
 
 if sys.version_info >= (3,2):
     from html import escape
