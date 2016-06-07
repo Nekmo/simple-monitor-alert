@@ -33,7 +33,7 @@ class TestMonitors(unittest.TestCase, TestBase):
         monitors = self.get_monitors()
 
         def get_values_list(ls):
-            return sorted(map(lambda x: list(x.items()), ls))
+            return sorted(map(lambda x: sorted(list(x.items())), ls))
 
         def cycles_target(cycles, target):
             cycles = monitors.get_parameters_cycles(cycles)
