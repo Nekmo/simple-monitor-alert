@@ -191,16 +191,43 @@ class DefaultMatcher(object):
     value = re.compile('yes|true|0', re.IGNORECASE)
 
 
-# TODO: Observable
 class Observable(dict):
+    """
+    (key* = value) < set: item
+    * key: surname(forename).parameter
+    surname(forename) < id
+
+    Examples:
+    hdd(sda).name = 'HDD sda'
+    hdd(sda).value = 27
+    -------------------
+    Keys: hdd(sda).name, hdd(sda).value
+    Values: 'HDD sda', 27
+    Items: hdd(sda).name = 'HDD sda', hdd(sda).value = 27
+    Surname: hdd
+    Forename: sda
+    Id: hdd(sda)
+    Parameters: name, value
+
+    cpu.name = 'CPU pcnt'
+    cpu.value = 48
+    -------------------
+    Keys: cpu.name, cpu.value
+    Values: 'CPU pcnt', 48
+    Items: cpu.name = 'CPU pcnt', cpu.value = 48
+    Surname: cpu
+    Forename:
+    Id: cpu
+    Parameters: name, value
+    """
     group_pattern = re.compile('(?P<name>[A-z]+)\((?P<group>[A-z]+)\) *')
     monitor = None
     param_used = None
 
-    def __init__(self, name, group=None):
+    def __init__(self, surname, forename=None):
         super(Observable, self).__init__()
-        self.name = name
-        self.group = group
+        self.name = surname
+        self.group = forename
 
     def add_line(self, line):
         param = self.get_parameter(line.key)
@@ -263,7 +290,6 @@ class Observable(dict):
         """Parameter used in execution. Different to get_param.
         """
         self.param_used = param_used
-
 
 
 class KeyValueLine(object):
