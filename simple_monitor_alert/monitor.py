@@ -222,7 +222,7 @@ class Monitors(object):
         for parameter, value in parameters.items():
             parameter = parameter.split('(')[0]
             names_parameters[parameter].append(value)
-        cycles_num = len(sorted(names_parameters.items(), key=lambda x: len(x), reverse=True)[0])
+        cycles_num = len(sorted(names_parameters.items(), key=lambda x: len(x[1]), reverse=True)[0][1])
         cycles = []
         for i in range(cycles_num):
             cycle = {}

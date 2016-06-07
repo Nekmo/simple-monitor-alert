@@ -29,6 +29,19 @@ class TestMonitors(unittest.TestCase, TestBase):
         monitors = self.get_monitors()
         list(monitors.execute_all())
 
+    def test_parameters_cycles(self):
+        monitors = self.get_monitors()
+
+        def get_values_list(ls):
+            return sorted(map(lambda x: list(x.items()), ls))
+
+        def cycles_target(cycles, target):
+            cycles = monitors.get_parameters_cycles(cycles)
+            self.assertEqual(get_values_list(cycles), get_values_list(target))
+        cycles_target({'foo': '3'}, [{'foo': '3'}])
+        cycles_target({'foo(g1)': '1', 'foo(g2)': '2'}, [{'foo': '1'}, {'foo': '2'}])
+        cycles_target({'foo(g1)': '1', 'foo(g2)': '2', 'bar': 'eggs'},
+                      [{'foo': '1', 'bar': 'eggs'}, {'foo': '2', 'bar': 'eggs'}])
 
 if __name__ == '__main__':
     unittest.main()

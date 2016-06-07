@@ -20,7 +20,7 @@ def validate_write_dir(directory, log=lambda x: x):
     try:
         makedirs(directory, exist_ok=True)
     except OSError:
-        log('No write permissions to the directory {}.'.format(directory))
+        log('No write permissions to {} directory.'.format(directory))
         return False
     return os.access(directory, os.W_OK)
 
