@@ -418,7 +418,7 @@ class FakeBdistWheel(Command):
         pass
 
     def run(self):
-        print('Sorry, but wheel is not supported in this package!')
+        print('Sorry, but wheel is not supported for this package!')
 
 
 setup(

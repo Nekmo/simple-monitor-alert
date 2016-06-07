@@ -1,8 +1,9 @@
 import sys
+from configparser import NoSectionError
 
 from simple_monitor_alert.alerts import Alerts
 from simple_monitor_alert.lines import Observable, ItemLine
-from simple_monitor_alert.sma import Results, Config
+from simple_monitor_alert.sma import Results, Config, MonitorsInfo
 from simple_monitor_alert.utils.files import JSONFile
 
 
@@ -33,9 +34,14 @@ class FakeObservableResults(FakeJSONFile, Results):
         return result
 
 
+class FakeMonitorsInfo(FakeJSONFile, MonitorsInfo):
+    pass
+
+
 class FakeSMA(object):
-    def __init__(self, config=None):
+    def __init__(self, config=None, monitors_info=None):
         self.results = FakeObservableResults()
+        self.monitors_info = monitors_info or FakeMonitorsInfo({})
         self.config = config
 
 
@@ -60,7 +66,10 @@ class FakeConfig(Config):
         self._data = data
 
     def items(self, section=None, **kwargs):
-        return self._data[section]
+        try:
+            return self._data[section]
+        except KeyError:
+            raise NoSectionError(section)
 
 
 class TestBase(object):
@@ -75,7 +84,7 @@ class TestBase(object):
         alerts = Alerts(sma, '/Fake-Alerts-Dir', alerts_modules, [section])
         return alerts
 
-    def get_sma(self, section):
+    def get_sma(self, section=None):
         config = FakeConfig({section: ()})
         sma = FakeSMA(config)
         return sma

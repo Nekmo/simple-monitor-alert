@@ -109,7 +109,6 @@ class MonitorResults(object):
 
 
 class Results(JSONFile):
-
     def __init__(self, path, create=True, sma=None):
         super(Results, self).__init__(path, create)
         self.sma = sma

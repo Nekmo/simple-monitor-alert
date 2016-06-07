@@ -3,6 +3,7 @@ import os
 import subprocess
 import warnings
 import logging
+import inspect
 from collections import defaultdict
 from time import sleep, time
 from threading import Timer
@@ -128,9 +129,9 @@ class Monitor(object):
             try:
                 yield RawLine.parse(line, self)
             except InvalidScriptLineError:
-                if issubclass(on_error, Warning):
+                if inspect.isclass(on_error) and issubclass(on_error, Warning):
                     warnings.warn_explicit(on_error(line, self.script_path), on_error, self.script_path, i + 1)
-                elif issubclass(on_error, Exception):
+                elif inspect.isclass(on_error) and issubclass(on_error, Exception):
                     raise on_error(line, self.script_path)
                 elif on_error is None:
                     pass
@@ -179,6 +180,8 @@ class Monitors(object):
     _monitors_paths = None
 
     def __init__(self, monitors_dir=None, config=None, sma=None):
+        # TODO: remove config parameter: get from sma
+        config = config or sma.config if sma else None
         self.monitors_dir, self.config = monitors_dir, config
         self.sma = sma
 
@@ -191,7 +194,7 @@ class Monitors(object):
 
     def _get_monitors_paths(self, monitors_dir):
         if self._monitors_paths is None:
-            self._monitors_paths =  [os.path.join(monitors_dir, file) for file in os.listdir(monitors_dir)]
+            self._monitors_paths = [os.path.join(monitors_dir, file) for file in os.listdir(monitors_dir)]
         return self._monitors_paths
 
     def get_monitors_names(self, monitors_dir=None):
