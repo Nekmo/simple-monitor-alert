@@ -1,8 +1,15 @@
 #!/usr/bin/env python
+import os
 import sys
 
-if __name__ == "__main__":
+USER = 'sma'
 
+is_main = __name__ == "__main__"
+
+if is_main and os.geteuid() == 0:
+    # Executed as root
+    os.execvp("sudo", ["sudo", "-u", USER] + sys.argv)
+elif is_main:
     from simple_monitor_alert.management import execute_from_command_line
 
     execute_from_command_line(sys.argv)
