@@ -420,6 +420,11 @@ class FakeBdistWheel(Command):
     def run(self):
         print('Sorry, but wheel is not supported for this package!')
 
+# http://thomas-cokelaer.info/blog/2012/03/how-to-embedded-data-files-in-python-using-setuptools/
+datadir = 'monitors'
+datafiles = [(d, [os.path.join(d,f) for f in files])
+    for d, folders, files in os.walk(datadir)]
+print(datafiles)
 
 setup(
     cmdclass={'install': SystemInstallCommand, 'bdist_wheel': FakeBdistWheel},
@@ -454,6 +459,8 @@ setup(
     download_url=PACKAGE_DOWNLOAD_URL,
     keywords=KEYWORDS,
     scripts=scripts,
+    datafiles=datafiles,
+
 
     # entry_points={},
 
