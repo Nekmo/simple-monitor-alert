@@ -459,7 +459,7 @@ setup(
     download_url=PACKAGE_DOWNLOAD_URL,
     keywords=KEYWORDS,
     scripts=scripts,
-    datafiles=datafiles,
+    data_files=datafiles,
 
 
     # entry_points={},
