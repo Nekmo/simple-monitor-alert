@@ -15,7 +15,8 @@ arch=("any")
 url=""
 license=('MIT')
 groups=()
-depends=('python')
+depends=('python' 'python-dateutil' 'python-future' 'python-requests' 'python-six'
+         'python-pip' 'python-colorclass-git' 'python-humanize' 'python-terminaltables')
 makedepends=()
 provides=()
 conflicts=()
@@ -23,9 +24,9 @@ replaces=()
 backup=()
 options=(!emptydirs)
 install=
-# source=("simple_monitor_alert::git+https://github.com/Nekmo/simple-monitor-alert.git#branch=v0.2.5")
+#source=("simple_monitor_alert::git+https://github.com/Nekmo/simple-monitor-alert.git#branch=v0.2.5")
+#md5sums=("SKIP")
 source=()
-# md5sums=("SKIP")
 md5sums=()
 
 package() {
@@ -35,9 +36,7 @@ package() {
   # Create directories
   mkdir -p usr/lib/simple-monitor-alert
   mkdir -p usr/lib/systemd/system
-  mkdir -p etc/simple-monitor-alert/alerts
-  mkdir etc/simple-monitor-alert/monitors-enabled
-  mkdir etc/simple-monitor-alert/monitors-available
+  mkdir -p etc/simple-monitor-alert/monitors-enabled
   # Move directories
   mv usr/alerts usr/lib/simple-monitor-alert/alerts
   mv usr/monitors usr/lib/simple-monitor-alert/monitors
@@ -47,8 +46,8 @@ package() {
   mv usr/services/sma.service usr/lib/systemd/system
   # Create symlinks
   cd "$srcdir/simple_monitor_alert"
-  echo $PWD
   BASE_DIR=$pkgdir python -m simple_monitor_alert.install create-symlinks
+  BASE_DIR=$pkgdir python -m simple_monitor_alert.install enable-default-monitors
   # Clean
   cd $pkgdir
   rm -rf usr/services

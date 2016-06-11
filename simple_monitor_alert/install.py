@@ -19,12 +19,12 @@ def first_path_exist(paths):
             return test_path
 
 
-BASE_DIR = os.environ.setdefault('BASE_DIR', '')
+BASE_DIR = os.environ.get('BASE_DIR', '')
 ENABLED_MONITORS_DIR = '{}/etc/simple-monitor-alert/monitors-enabled'.format(BASE_DIR)
-AVAILABLE_MONITORS_DIR = '/etc/simple-monitor-alert/monitors-available'
-MONITORS_DIR = '{}/usr/lib/simple-monitor-alert/monitors'.format(BASE_DIR)
-ALERTS_DIR = '{}/usr/lib/simple-monitor-alert/alerts'.format(BASE_DIR)
-AVAILABLE_ALERTS_DIR = '/etc/simple-monitor-alert/alerts'
+AVAILABLE_MONITORS_DIR = '{}/etc/simple-monitor-alert/monitors-available'.format(BASE_DIR)
+MONITORS_DIR = '/usr/lib/simple-monitor-alert/monitors'
+ALERTS_DIR = '/usr/lib/simple-monitor-alert/alerts'
+AVAILABLE_ALERTS_DIR = '{}/etc/simple-monitor-alert/alerts'.format(BASE_DIR)
 SMA_TEMPLATE_FILENAME = 'sma-template.ini'
 SMA_FILE = '/etc/simple-monitor-alert/sma.ini'
 DEFAULT_ENABLEDS_MONITORS = ['hdds.sh', 'system.sh']
@@ -62,7 +62,7 @@ def create_backup(file):
 
 
 def enable_default_monitors(echo=None):
-    echo = echo or (lambda x: x)
+    echo = echo or print
     if not os.listdir(ENABLED_MONITORS_DIR):
         echo('Enabling defaults monitors: {}'.format(', '.join(DEFAULT_ENABLEDS_MONITORS)))
         for enabled_monitor in DEFAULT_ENABLEDS_MONITORS:
@@ -71,7 +71,7 @@ def enable_default_monitors(echo=None):
 
 
 def create_symlinks(echo=None):
-    echo = echo or (lambda x: x)
+    echo = echo or print
     for from_, to in [(MONITORS_DIR, AVAILABLE_MONITORS_DIR), (ALERTS_DIR, AVAILABLE_ALERTS_DIR)]:
         if not os.path.exists(to):
             echo('Creating symbolic link "{}" -> "{}"'.format(from_, to))
@@ -94,7 +94,7 @@ def config_directories(echo=None):
 
 
 def create_user_group(echo=None):
-    echo = echo or (lambda x: x)
+    echo = echo or print
     echo('Creating user {}'.format(USERNAME))
     p = subprocess.Popen(['useradd', USERNAME])
     if sys.version_info >= (3, 3):
@@ -107,7 +107,7 @@ def create_user_group(echo=None):
 
 def copy_sma(dir_path=None, echo=None):
     dir_path = dir_path or get_dir_path()
-    echo = echo or (lambda x: x)
+    echo = echo or print
     if not os.path.lexists(SMA_FILE):
         echo('Copying sma template file')
         shutil.copy(os.path.join(dir_path, SMA_TEMPLATE_FILENAME), SMA_FILE)
@@ -117,7 +117,7 @@ def copy_sma(dir_path=None, echo=None):
 
 def create_services(dir_path=None, echo=None):
     dir_path = dir_path or get_dir_path()
-    echo = echo or (lambda x: x)
+    echo = echo or print
     for src, dest in SERVICES:
         if not os.path.lexists(os.path.dirname(dest)):
             continue
@@ -129,7 +129,7 @@ def create_services(dir_path=None, echo=None):
 
 
 def var_directory(echo=None):
-    echo = echo or (lambda x: x)
+    echo = echo or print
     echo('Creating var directory')
     makedirs(VAR_DIRECTORY, 0o700, True)
     uid = pwd.getpwnam(USERNAME).pw_uid
