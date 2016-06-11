@@ -341,7 +341,7 @@ def get_datafiles(datadirs):
 
 setup(
     cmdclass={'install': SystemInstallCommand,
-              'bdist_wheel': FakeBdistWheel} if '--manual-install' not in sys.argv else None,
+              'bdist_wheel': FakeBdistWheel} if '--manual-install' not in sys.argv else {},
 
     name=PACKAGE_NAME,
     version=package_version,
