@@ -340,7 +340,7 @@ def get_datafiles(datadirs):
 
 manual_install = '--manual-install' in sys.argv
 if manual_install:
-    sys.argv.remove(manual_install)
+    sys.argv.remove('--manual-install')
 setup(
     cmdclass={'install': SystemInstallCommand, 'bdist_wheel': FakeBdistWheel} if manual_install else {},
 
