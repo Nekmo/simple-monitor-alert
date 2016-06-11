@@ -1,0 +1,34 @@
+# This is an example PKGBUILD file. Use this as a start to creating your own,
+# and remove these comments. For more information, see 'man PKGBUILD'.
+# NOTE: Please fill out the license field for your package! If it is unknown,
+# then please put 'unknown'.
+
+# See http://wiki.archlinux.org/index.php/Python_Package_Guidelines for more
+# information on Python packaging.
+
+# Maintainer: Nekmo <contacto@nekmo.com>
+pkgname=simple-monitor-alert
+pkgver=0.2.5
+pkgrel=1
+pkgdesc="A simple monitor with alerts for Unix/Linux under the KISS philosophy."
+arch=("any")
+url=""
+license=('MIT')
+groups=()
+depends=('python')
+makedepends=()
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=(!emptydirs)
+install=
+source=("simple_monitor_alert::git+https://github.com/Nekmo/simple-monitor-alert.git")
+md5sums=("SKIP")
+
+package() {
+  cd "$srcdir/$pkgname-$pkgver"
+  python setup.py install --root="$pkgdir/" --optimize=1
+}
+
+# vim:set ts=2 sw=2 et:
