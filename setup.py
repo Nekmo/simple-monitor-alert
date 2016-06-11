@@ -338,6 +338,7 @@ def get_datafiles(datadirs):
         for d, folders, files in os.walk(datadir):
             yield (d, [os.path.join(d, f) for f in files if not f.endswith('.pyc')])
 
+# This is temporal: It will be eliminated in version 0.3.0
 manual_install = '--manual-install' in sys.argv
 if manual_install:
     sys.argv.remove('--manual-install')
@@ -374,7 +375,7 @@ setup(
     download_url=PACKAGE_DOWNLOAD_URL,
     keywords=KEYWORDS,
     scripts=scripts,
-    data_files=list(get_datafiles(['monitors', 'alerts', 'services'])),
+    data_files=list(get_datafiles(['monitors', 'alerts', 'services'])) + [('', ['sma-template.ini'])],
 
 
     # entry_points={},

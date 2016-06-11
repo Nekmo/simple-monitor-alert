@@ -35,12 +35,22 @@ package() {
   # Create directories
   mkdir -p usr/lib/simple-monitor-alert
   mkdir -p usr/lib/systemd/system
+  mkdir -p etc/simple-monitor-alert/alerts
+  mkdir etc/simple-monitor-alert/monitors-enabled
+  mkdir etc/simple-monitor-alert/monitors-available
   # Move directories
   mv usr/alerts usr/lib/simple-monitor-alert/alerts
   mv usr/monitors usr/lib/simple-monitor-alert/monitors
+  # Config file
+  mv usr/sma-template.ini etc/simple-monitor-alert/sma.ini
   # Service
   mv usr/services/sma.service usr/lib/systemd/system
+  # Create symlinks
+  cd "$srcdir/simple_monitor_alert"
+  echo $PWD
+  BASE_DIR=$pkgdir python -m simple_monitor_alert.install create-symlinks
   # Clean
+  cd $pkgdir
   rm -rf usr/services
 }
 

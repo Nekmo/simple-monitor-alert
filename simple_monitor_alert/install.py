@@ -18,10 +18,12 @@ def first_path_exist(paths):
         if os.path.exists(test_path):
             return test_path
 
-ENABLED_MONITORS_DIR = '/etc/simple-monitor-alert/monitors-enabled'
+
+BASE_DIR = os.environ.setdefault('BASE_DIR', '')
+ENABLED_MONITORS_DIR = '{}/etc/simple-monitor-alert/monitors-enabled'.format(BASE_DIR)
 AVAILABLE_MONITORS_DIR = '/etc/simple-monitor-alert/monitors-available'
-MONITORS_DIR = '/usr/lib/simple-monitor-alert/monitors'
-ALERTS_DIR = '/usr/lib/simple-monitor-alert/alerts'
+MONITORS_DIR = '{}/usr/lib/simple-monitor-alert/monitors'.format(BASE_DIR)
+ALERTS_DIR = '{}/usr/lib/simple-monitor-alert/alerts'.format(BASE_DIR)
 AVAILABLE_ALERTS_DIR = '/etc/simple-monitor-alert/alerts'
 SMA_TEMPLATE_FILENAME = 'sma-template.ini'
 SMA_FILE = '/etc/simple-monitor-alert/sma.ini'
