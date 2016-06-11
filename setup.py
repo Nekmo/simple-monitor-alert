@@ -338,10 +338,11 @@ def get_datafiles(datadirs):
         for d, folders, files in os.walk(datadir):
             yield (d, [os.path.join(d, f) for f in files if not f.endswith('.pyc')])
 
-
+manual_install = '--manual-install' in sys.argv
+if manual_install:
+    sys.argv.remove(manual_install)
 setup(
-    cmdclass={'install': SystemInstallCommand,
-              'bdist_wheel': FakeBdistWheel} if '--manual-install' not in sys.argv else {},
+    cmdclass={'install': SystemInstallCommand, 'bdist_wheel': FakeBdistWheel} if manual_install else {},
 
     name=PACKAGE_NAME,
     version=package_version,
