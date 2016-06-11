@@ -342,7 +342,7 @@ manual_install = '--manual-install' in sys.argv
 if manual_install:
     sys.argv.remove('--manual-install')
 setup(
-    cmdclass={'install': SystemInstallCommand, 'bdist_wheel': FakeBdistWheel} if manual_install else {},
+    cmdclass={'install': SystemInstallCommand, 'bdist_wheel': FakeBdistWheel} if not manual_install else {},
 
     name=PACKAGE_NAME,
     version=package_version,
@@ -374,7 +374,7 @@ setup(
     download_url=PACKAGE_DOWNLOAD_URL,
     keywords=KEYWORDS,
     scripts=scripts,
-    data_files=get_datafiles(['monitors', 'alerts', 'services']),
+    data_files=list(get_datafiles(['monitors', 'alerts', 'services'])),
 
 
     # entry_points={},

@@ -23,12 +23,25 @@ replaces=()
 backup=()
 options=(!emptydirs)
 install=
-source=("simple_monitor_alert::git+https://github.com/Nekmo/simple-monitor-alert.git")
-md5sums=("SKIP")
+# source=("simple_monitor_alert::git+https://github.com/Nekmo/simple-monitor-alert.git#branch=v0.2.5")
+source=()
+# md5sums=("SKIP")
+md5sums=()
 
 package() {
-  cd "$srcdir/$pkgname-$pkgver"
-  python setup.py install --root="$pkgdir/" --optimize=1
+  cd "$srcdir/simple_monitor_alert"
+  python setup.py install --root="$pkgdir/" --optimize=1 --manual-install
+  cd $pkgdir
+  # Create directories
+  mkdir -p usr/lib/simple-monitor-alert
+  mkdir -p usr/lib/systemd/system
+  # Move directories
+  mv usr/alerts usr/lib/simple-monitor-alert/alerts
+  mv usr/monitors usr/lib/simple-monitor-alert/monitors
+  # Service
+  mv usr/services/sma.service usr/lib/systemd/system
+  # Clean
+  rm -rf usr/services
 }
 
 # vim:set ts=2 sw=2 et:

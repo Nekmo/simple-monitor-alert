@@ -1,3 +1,5 @@
+"""Install script
+"""
 from __future__ import print_function
 import distutils
 import filecmp
@@ -11,12 +13,10 @@ import sys
 from simple_monitor_alert.utils.files import makedirs
 
 
-
 def first_path_exist(paths):
     for test_path in paths:
         if os.path.exists(test_path):
             return test_path
-
 
 ENABLED_MONITORS_DIR = '/etc/simple-monitor-alert/monitors-enabled'
 AVAILABLE_MONITORS_DIR = '/etc/simple-monitor-alert/monitors-available'
@@ -38,6 +38,11 @@ SERVICES = [
         '/etc/init.d/sma.sh'
     )
 ]
+
+
+def get_dir_path():
+    import simple_monitor_alert
+    return os.path.dirname(simple_monitor_alert.__path__[0])
 
 
 def create_backup(file):
@@ -71,7 +76,8 @@ def create_symlinks(echo=None):
             os.symlink(from_, to)
 
 
-def copy_files(dir_path, echo=None):
+def copy_files(dir_path=None, echo=None):
+    dir_path = dir_path or get_dir_path()
     echo = echo or print
     for src_name, dest in [('monitors', MONITORS_DIR), ('alerts', ALERTS_DIR)]:
         echo('Copying directory "{}" to "{}"'.format(os.path.join(dir_path, src_name), dest))
@@ -97,7 +103,8 @@ def create_user_group(echo=None):
         raise Exception('It has failed to create the user {}. Returncode: {}'.format(USERNAME, p.returncode))
 
 
-def copy_sma(dir_path, echo=None):
+def copy_sma(dir_path=None, echo=None):
+    dir_path = dir_path or get_dir_path()
     echo = echo or (lambda x: x)
     if not os.path.lexists(SMA_FILE):
         echo('Copying sma template file')
@@ -106,7 +113,8 @@ def copy_sma(dir_path, echo=None):
         echo('sma file already exists. It has not been updated.')
 
 
-def create_services(dir_path, echo=None):
+def create_services(dir_path=None, echo=None):
+    dir_path = dir_path or get_dir_path()
     echo = echo or (lambda x: x)
     for src, dest in SERVICES:
         if not os.path.lexists(os.path.dirname(dest)):
@@ -118,7 +126,7 @@ def create_services(dir_path, echo=None):
         shutil.copy(os.path.join(dir_path, src), dest)
 
 
-def var_directory(echo):
+def var_directory(echo=None):
     echo = echo or (lambda x: x)
     echo('Creating var directory')
     makedirs(VAR_DIRECTORY, 0o700, True)
@@ -128,8 +136,7 @@ def var_directory(echo):
 
 
 def install_all(dir_path=None, echo=None):
-    import simple_monitor_alert
-    dir_path = dir_path or os.path.dirname(simple_monitor_alert.__path__[0])
+    dir_path = dir_path or get_dir_path()
     echo = echo or print
     echo('Installing things that are not Python (system files).')
     config_directories(echo)
@@ -143,4 +150,17 @@ def install_all(dir_path=None, echo=None):
 
 
 if __name__ == '__main__':
-    install_all()
+    import argparse
+    from simple_monitor_alert.management import set_default_subparser
+    argparse.ArgumentParser.set_default_subparser = set_default_subparser
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.sub = parser.add_subparsers()
+    for option in [enable_default_monitors, create_symlinks, copy_files, config_directories, create_user_group,
+                   copy_sma, create_services, var_directory, install_all]:
+        option_name = option.__name__
+        parse_service = parser.sub.add_parser(option_name.replace('_', '-'),
+                                              help='Execute {} function'.format(option_name))
+        parse_service.set_defaults(func=option)
+    parser.set_default_subparser('install-all')
+    args = parser.parse_args()
+    args.func()
