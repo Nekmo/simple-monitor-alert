@@ -10,6 +10,9 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+/packages/archlinux/pkg
+/packages/archlinux/simple_monitor_alert
+/packages/archlinux/src
 env/
 build/
 develop-eggs/

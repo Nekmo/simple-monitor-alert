@@ -23,7 +23,7 @@ conflicts=()
 replaces=()
 backup=()
 options=(!emptydirs)
-install=
+install=simple-monitor-alert.install
 source=("simple_monitor_alert::git+https://github.com/Nekmo/simple-monitor-alert.git#branch=v0.2.5")
 md5sums=("SKIP")
 #source=()
