@@ -38,6 +38,7 @@ package() {
   mkdir -p usr/lib/systemd/system
   mkdir -p etc/simple-monitor-alert/monitors-enabled
   # Move directories
+  ls -l usr
   mv usr/alerts usr/lib/simple-monitor-alert/alerts
   mv usr/monitors usr/lib/simple-monitor-alert/monitors
   # Config file
