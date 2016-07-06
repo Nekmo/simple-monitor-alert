@@ -4,10 +4,7 @@
 
 import argparse
 import logging
-
 import sys
-
-from simple_monitor_alert.sma import SMA, SMAService
 
 SMA_INI_FILE = '/etc/simple-monitor-alert/sma.ini'
 MONITORS_DIR = '/etc/simple-monitor-alert/monitors-enabled/'
@@ -67,6 +64,7 @@ def execute_from_command_line(argv=None):
     """
     A simple method that runs a ManagementUtility.
     """
+    from simple_monitor_alert.sma import SMA, SMAService
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--monitors-dir', default=MONITORS_DIR)
     parser.add_argument('--alerts-dir', default=ALERTS_DIR)

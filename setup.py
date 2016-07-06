@@ -1,24 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import distutils
-import filecmp
 import getpass
-import shutil
-import subprocess
-
-import pwd
-
-import grp
-from distutils.version import LooseVersion
-
-from setuptools import setup, find_packages, Command
-import pip
-from distutils.util import convert_path
-from fnmatch import fnmatchcase
 import os
 import sys
 import uuid
-from simple_monitor_alert.utils.files import makedirs
+from distutils.util import convert_path
+from distutils.version import LooseVersion
+from fnmatch import fnmatchcase
+
+import pip
+from setuptools import setup, find_packages, Command
+
+from simple_monitor_alert.install import install_all
 
 if hasattr(pip, '__version__') and LooseVersion(pip.__version__) >= LooseVersion('6.0.0'):
     from pip.req import parse_requirements
@@ -32,12 +25,6 @@ else:
     def parse_requirements(reqs_path, *args, **kwargs):
         return [FakeReq(line.strip()) for line in open(reqs_path).readlines()]
 
-
-def first_path_exist(paths):
-    for test_path in paths:
-        if os.path.exists(test_path):
-            return test_path
-
 ###############################
 #  Configuración del paquete  #
 ###############################
@@ -47,28 +34,6 @@ def first_path_exist(paths):
 # 2. Incluya un archivo requirements.txt con las dependencias.
 # 3. Cambie el archivo LICENSE.txt por el de su licencia.
 # 4. Añada un archivo README, README.rst o README.md, el cual se trata de la la descripción extendida.
-
-ENABLED_MONITORS_DIR = '/etc/simple-monitor-alert/monitors-enabled'
-AVAILABLE_MONITORS_DIR = '/etc/simple-monitor-alert/monitors-available'
-MONITORS_DIR = '/usr/lib/simple-monitor-alert/monitors'
-ALERTS_DIR = '/usr/lib/simple-monitor-alert/alerts'
-AVAILABLE_ALERTS_DIR = '/etc/simple-monitor-alert/alerts'
-SMA_TEMPLATE_FILENAME = 'sma-template.ini'
-SMA_FILE = '/etc/simple-monitor-alert/sma.ini'
-DEFAULT_ENABLEDS_MONITORS = ['hdds.sh', 'system.sh']
-USERNAME = 'sma'
-VAR_DIRECTORY = '/var/lib/simple-monitor-alert'
-
-SERVICES = [
-    (
-        'services/sma.service',
-        '{}/sma.service'.format(first_path_exist(['/usr/lib/systemd/system', '/lib/systemd/system']))
-    ),
-    (
-        'services/sma.sh',
-        '/etc/init.d/sma.sh'
-    )
-]
 
 #  Información del autor
 from setuptools.command.install import install
@@ -340,20 +305,6 @@ CLASSIFIERS.extend([
 ])
 
 
-def create_backup(file):
-    if not os.path.lexists(file):
-        return
-    backup_file = file + '.bak'
-    i = 0
-    while os.path.lexists(backup_file):
-        new_backup_file = '{}{}'.format(backup_file, i)
-        if not os.path.lexists(new_backup_file):
-            backup_file = new_backup_file
-            break
-        i += 1
-    shutil.move(file, backup_file)
-
-
 class SystemInstallCommand(install):
     """Custom install setup to help run shell commands (outside shell) before installation"""
 
@@ -364,47 +315,7 @@ class SystemInstallCommand(install):
         if getpass.getuser() != 'root':
             print('WARNING: Simple-Monitor-Alert installed as "{}". Install as root to create the system files!')
             return
-        print('Installing things that are not Python (system files).')
-        for directory in [ENABLED_MONITORS_DIR, os.path.dirname(AVAILABLE_MONITORS_DIR)]:
-            print('Creating directory {}'.format(directory))
-            makedirs(directory, exist_ok=True)
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        for src_name, dest in [('monitors', MONITORS_DIR), ('alerts', ALERTS_DIR)]:
-            print('Copying directory "{}" to "{}"'.format(os.path.join(dir_path, src_name), dest))
-            distutils.dir_util.copy_tree(os.path.join(dir_path, src_name), dest)
-        for from_, to in [(MONITORS_DIR, AVAILABLE_MONITORS_DIR), (ALERTS_DIR, AVAILABLE_ALERTS_DIR)]:
-            if not os.path.exists(to):
-                print('Creating symbolic link "{}" -> "{}"'.format(from_, to))
-                os.symlink(from_, to)
-        if not os.listdir(ENABLED_MONITORS_DIR):
-            print('Enabling defaults monitors: {}'.format(', '.join(DEFAULT_ENABLEDS_MONITORS)))
-            for enabled_monitor in DEFAULT_ENABLEDS_MONITORS:
-                os.symlink('../{}/{}'.format(os.path.split(AVAILABLE_MONITORS_DIR)[1], enabled_monitor),
-                           os.path.join(ENABLED_MONITORS_DIR, enabled_monitor))
-        print('Creating user {}'.format(USERNAME))
-        p = subprocess.Popen(['useradd', USERNAME])
-        if sys.version_info >= (3,3):
-            p.wait(2)
-        else:
-            p.wait()
-        if p.returncode not in [0, 9]:
-            raise Exception('It has failed to create the user {}. Returncode: {}'.format(USERNAME, p.returncode))
-        print('Creating variable data directory: {}'.format(VAR_DIRECTORY))
-        makedirs(VAR_DIRECTORY, 0o700, True)
-        uid = pwd.getpwnam(USERNAME).pw_uid
-        gid = grp.getgrnam("root").gr_gid
-        os.chown(VAR_DIRECTORY, uid, gid)
-        print('Copying services')
-        for src, dest in SERVICES:
-            if not os.path.lexists(os.path.dirname(dest)):
-                continue
-            if os.path.exists(dest) and filecmp.cmp(os.path.join(dir_path, src), dest):
-                continue
-            create_backup(dest)
-            shutil.copy(os.path.join(dir_path, src), dest)
-        print('Copying sma template file')
-        if not os.path.lexists(SMA_FILE):
-            shutil.copy(os.path.join(dir_path, SMA_TEMPLATE_FILENAME), SMA_FILE)
+        install_all()
 
 
 class FakeBdistWheel(Command):
@@ -427,9 +338,12 @@ def get_datafiles(datadirs):
         for d, folders, files in os.walk(datadir):
             yield (d, [os.path.join(d, f) for f in files if not f.endswith('.pyc')])
 
-
+# This is temporal: It will be eliminated in version 0.3.0
+manual_install = '--manual-install' in sys.argv
+if manual_install:
+    sys.argv.remove('--manual-install')
 setup(
-    cmdclass={'install': SystemInstallCommand, 'bdist_wheel': FakeBdistWheel},
+    cmdclass={'install': SystemInstallCommand, 'bdist_wheel': FakeBdistWheel} if not manual_install else {},
 
     name=PACKAGE_NAME,
     version=package_version,
@@ -461,7 +375,7 @@ setup(
     download_url=PACKAGE_DOWNLOAD_URL,
     keywords=KEYWORDS,
     scripts=scripts,
-    data_files=get_datafiles(['monitors', 'alerts', 'services']),
+    data_files=list(get_datafiles(['monitors', 'alerts', 'services'])) + [('', ['sma-template.ini'])],
 
 
     # entry_points={},
