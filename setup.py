@@ -428,7 +428,6 @@ def get_datafiles(datadirs):
             yield (d, [os.path.join(d, f) for f in files if not f.endswith('.pyc')])
 
 
-print(list(get_datafiles(['monitors', 'alerts'])))
 setup(
     cmdclass={'install': SystemInstallCommand, 'bdist_wheel': FakeBdistWheel},
 
