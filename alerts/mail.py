@@ -28,7 +28,7 @@ class Mail(AlertBase):
     def send(self, subject, message, observable_name='', name='', extra_info=None, level='warning', fail=True,
              condition='', hostname=None, observable=None):
         me = self.config.get('from', 'noreply@localhost')
-        to = self.config.get('from', 'root@localhost')
+        to = self.config.get('to', 'root@localhost')
         msg = MIMEText(message)
         msg['Subject'] = subject
         msg['From'] = me
